@@ -8,13 +8,20 @@ var Play = function (game) {
 
 Play.prototype = {
     init: function (LEVELS, level) {
+        // Initialize incoming variables
         this.LEVELS = LEVELS;
         this.level = level;
     },
     preload: function () {
         // Load scripts
         game.load.script("transition", "js/states/transition.js");
-        game.load.script("endLevelScore", "js/prefabs/endLevelScore.js");
+        game.load.script("endLevelScore", "js/prefabs/obstacle.js");
+
+        /***
+         * TODO: prefab for score maybe WIP
+         * game.load.script("endLevelScore", "js/prefabs/endLevelScore.js");
+         */
+
     },
     create: function () {
         // Arcade physics
@@ -27,43 +34,37 @@ Play.prototype = {
         this.obstacles = game.add.group();
 
         // Every time spawns obstacles
-        game.time.events.loop(Phaser.Timer.SECOND, this.createObstacle, this);
+        game.time.events.loop(Phaser.Timer.SECOND * 2, this.createObstacle, this);
+
+        this.previousObstacleIndex = 0;
+        this.obstacles = game.add.group();
 
         console.log("State: Play");
     },
     update: function () {
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
     },
-    // TODO: Should be its own prefab
     createObstacle: function () {
-        var obstacleIndex = game.rnd.pick([0, this.LEVELS[this.level].obstacles.length - 1]);
+        // Creating the obstacle
+        do {
+            var obstacleIndex = game.rnd.integerInRange(0, this.LEVELS[this.level].obstacles.length - 1);
+        } while (obstacleIndex == this.previousObstacleIndex);
+
+        this.previousObstacleIndex = obstacleIndex;
+
         var x = game.rnd.integerInRange(0, game.world.width);
         var y = -20;
         var direction = Math.floor(game.rnd.pick([-1, 1]));
+        var xVelocity = 0;
+        var yVelocity = this.OBSTACLE_VELOCITY;
+        var maxVelocity = this.OBSTACLE_MAX_VELOCITY;
 
-        var obstacle = game.add.sprite(x, y, this.LEVELS[this.level].obstacles[obstacleIndex].name);
-        game.physics.arcade.enable(obstacle);
-        obstacle.scale.x = direction;
-        obstacle.anchor.set(0.5);
+        this.obstacle = new Obstacle(game, x, y, direction, this.LEVELS[this.level].obstacles[obstacleIndex], xVelocity, yVelocity, maxVelocity);
+        game.add.existing(this.obstacle);
 
-        if (obstacle.x + obstacle.body.width / 2 > game.world.width) {
-            obstacle.x = game.world.width - obstacle.body.width / 2;
-        }
-        if (obstacle.x - obstacle.body.width / 2 < 0) {
-            obstacle.x = obstacle.body.width / 2;
-        }
-
-        obstacle.body.maxVelocity.y = this.OBSTACLE_MAX_VELOCITY;
-        obstacle.body.velocity.y = this.OBSTACLE_VELOCITY;
-
-        obstacle.events.onOutOfBounds.add(this.destroyObstacle, this);
-
-        this.obstacles.add(obstacle);
-
-    },
-    destroyObstacle: function (obstacle, pointer) {
-        if (obstacle.y > game.world.height + obstacle.body.height) {
-            obstacle.destroy();
-        }
+        /***
+         * TODO: adding it to the group which later on used for collision detection
+         */
+        this.obstacles.add(this.obstacle);
     }
 };
