@@ -19,10 +19,10 @@ var MainMenu = function (game) {
                 {
                     name: "branches",
                     burnable: true,
-                    hitBoxScaleX: 100,
-                    hitBoxScaleY: 100,
+                    hitBoxScaleX: 50,
+                    hitBoxScaleY: 30,
                     hitBoxOffsetX: 10,
-                    hitBoxOffsetY: 10,
+                    hitBoxOffsetY: 20,
                     /*** TODO: Use this structure when we have animations for our objects
                      idleAnimationFrames: ["animation0", "animation1", "animation2"],
                      burningAnimationFrames: ["animation0", "animation1", "animation2"],
@@ -39,8 +39,8 @@ var MainMenu = function (game) {
                 {
                     name: "bush",
                     burnable: true,
-                    hitBoxScaleX: 100,
-                    hitBoxScaleY: 100,
+                    hitBoxScaleX: 70,
+                    hitBoxScaleY: 70,
                     hitBoxOffsetX: 10,
                     hitBoxOffsetY: 10,
                     /*** TODO: Use this structure when we have animations for our objects
@@ -59,10 +59,10 @@ var MainMenu = function (game) {
                 {
                     name: "flowers",
                     burnable: true,
-                    hitBoxScaleX: 100,
-                    hitBoxScaleY: 100,
+                    hitBoxScaleX: 50,
+                    hitBoxScaleY: 30,
                     hitBoxOffsetX: 10,
-                    hitBoxOffsetY: 10,
+                    hitBoxOffsetY: 5,
                     /*** TODO: Use this structure when we have animations for our objects
                      idleAnimationFrames: ["animation0", "animation1", "animation2"],
                      burningAnimationFrames: ["animation0", "animation1", "animation2"],
