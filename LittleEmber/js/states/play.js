@@ -7,6 +7,10 @@ var Play = function (game) {
 };
 
 Play.prototype = {
+    init: function (LEVELS, level) {
+        this.LEVELS = LEVELS;
+        this.level = level;
+    },
     preload: function () {
         // Load scripts
         game.load.script("transition", "js/states/transition.js");
@@ -17,7 +21,7 @@ Play.prototype = {
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
         // Scrolling background
-        this.grassBg = game.add.tileSprite(0, 0, 600, 800, "grassBackground");
+        this.grassBg = game.add.tileSprite(0, 0, 600, 800, this.LEVELS[this.level].background);
 
         // Group that holds all of the obstacles
         this.obstacles = game.add.group();
@@ -32,12 +36,12 @@ Play.prototype = {
     },
     // TODO: Should be its own prefab
     createObstacle: function () {
-        var randomObstacle = game.rnd.pick(["bush", "flowers", "branches"]);
+        var obstacleIndex = game.rnd.pick([0, this.LEVELS[this.level].obstacles.length - 1]);
         var x = game.rnd.integerInRange(0, game.world.width);
         var y = -20;
         var direction = Math.floor(game.rnd.pick([-1, 1]));
 
-        var obstacle = game.add.sprite(x, y, randomObstacle);
+        var obstacle = game.add.sprite(x, y, this.LEVELS[this.level].obstacles[obstacleIndex].name);
         game.physics.arcade.enable(obstacle);
         obstacle.scale.x = direction;
         obstacle.anchor.set(0.5);
