@@ -94,6 +94,11 @@ MainMenu.prototype = {
         game.load.script("play", "js/states/play.js");
     },
     create: function () {
+        var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember" , {font: "Helvetica", fontSize: "60px", fill: "#fff"});
+        titleText.anchor.set(0.5);
+        // briefly explain how to play- this will eventually be replaced by a legit tutorial
+        var toPlayText = game.add.text(game.width / 2, game.height / 4, "WASD to move, traverse over\nobjects to consume and grow" , {font: "Helvetica", fontSize: "36px", fill: "#fff"});
+		toPlayText.anchor.set(0.5);
         // Add buttons
         var startButton = game.add.button(game.world.centerX, game.world.height / 2, "startButton", this.startGame, this, 0, 0, 1);
         startButton.anchor.set(0.5);
