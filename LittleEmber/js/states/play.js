@@ -4,7 +4,13 @@ var Play = function (game) {
 
     this.OBSTACLE_VELOCITY = 300;
     this.OBSTACLE_MAX_VELOCITY = 500;
+
+    this.PLAYER_VELOCITY_CHANGE = 75;
     this.PLAYER_MAX_VELOCITY = 300;
+
+    this.BURN_METER_MAX = -0.02;
+    this.BURN_METER_MIN = -0.97;
+    this.BURN_METER_CONSTANT_CHANGE = -0.01;
 };
 
 Play.prototype = {
@@ -60,8 +66,18 @@ Play.prototype = {
         // player physics
         game.physics.enable(this.player, Phaser.Physics.ARCADE);
         this.player.body.maxVelocity.set(this.PLAYER_MAX_VELOCITY);
-        this.player.body.drag.set(700);
+        // this.player.body.drag.set(700);
         this.player.body.collideWorldBounds = true;
+
+        // Burn meter
+        this.burnMeter = game.add.sprite(game.world.width - 220, 0, "atlas", "burnMeter_01");
+        this.burnMeter.animations.add("burning", ["burnMeter_01", "burnMeter_02", "burnMeter_03"], 15, true);
+        this.burnMeter.animations.play("burning", true);
+        this.burnMeterBackground = game.add.sprite(game.world.width, 0, "atlas", "burnMeterBackground");
+        this.burnMeterBackground.scale.x = this.BURN_METER_MAX;
+        this.burnMeterCutout = game.add.sprite(game.world.width - 220, 0, "atlas", "burnMeterCutout");
+
+        game.time.events.loop(Phaser.Timer.SECOND / 2, this.burnMeterConstantChange, this);
 
         game.state.add("GameOver", GameOver);
 
@@ -69,7 +85,7 @@ Play.prototype = {
     update: function () {
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
         // allow the player to exit game to GameOver state by pressing Q
-        if (game.input.keyboard.isDown(Phaser.Keyboard.Q)) {
+        if (game.input.keyboard.isDown(Phaser.Keyboard.Q) || this.burnMeterBackground.scale.x <= this.BURN_METER_MIN) {
             this.levelMusic.stop();
             this.emberSound.stop();
             game.state.start("GameOver", true, false, "Your flame flickers out...");
@@ -86,23 +102,23 @@ Play.prototype = {
         // these combo movements are not as fast as they should technically be, so might add
         // euclidian combinatorial directionns instead
         if (game.input.keyboard.isDown(Phaser.Keyboard.W)) {
-            this.player.body.velocity.y -= 75;
+            this.player.body.velocity.y -= this.PLAYER_VELOCITY_CHANGE;
         }
         if (game.input.keyboard.isDown(Phaser.Keyboard.S)) {
-            this.player.body.velocity.y += 75;
+            this.player.body.velocity.y += this.PLAYER_VELOCITY_CHANGE;
         }
         if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
-            this.player.body.velocity.x -= 75;
+            this.player.body.velocity.x -= this.PLAYER_VELOCITY_CHANGE;
         }
         if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
-            this.player.body.velocity.x += 75;
+            this.player.body.velocity.x += this.PLAYER_VELOCITY_CHANGE;
         }
         // if stuff isn't being held down to move, slow to a stop
         if (!game.input.keyboard.isDown(Phaser.Keyboard.W) && !game.input.keyboard.isDown(Phaser.Keyboard.S)) {
-            if (this.player.body.velocity.y > 300) { // if we were going down
+            if (this.player.body.velocity.y > this.PLAYER_MAX_VELOCITY) { // if we were going down
                 this.player.body.velocity.y -= 15;
             }
-            else if (this.player.body.velocity.y < 300) { // if we were going up
+            else if (this.player.body.velocity.y < this.PLAYER_MAX_VELOCITY) { // if we were going up
                 this.player.body.velocity.y += 30;
             }
         }
@@ -149,7 +165,7 @@ Play.prototype = {
              */
             game.time.events.add(Phaser.Timer.SECOND, this.switchToAshe, this, obstacle);
             this.changeScore(obstacle.score);
-
+            this.updateBurnMeter(obstacle.burnMeterChange);
         }
     },
     switchToAshe: function (obstacle) {
@@ -161,5 +177,18 @@ Play.prototype = {
     changeScore: function (scoreValue) {
         this.score += scoreValue;
         this.scoreText.text = "Score: " + this.score;
+    },
+    burnMeterConstantChange: function () {
+        if (this.burnMeterBackground.scale.x > this.BURN_METER_MIN) {
+            this.burnMeterBackground.scale.x += this.BURN_METER_CONSTANT_CHANGE;
+        }
+    },
+    updateBurnMeter: function (value) {
+        this.burnMeterBackground.scale.x += value;
+        if (this.burnMeterBackground.scale.x > this.BURN_METER_MAX) {
+            this.burnMeterBackground.scale.x = this.BURN_METER_MAX;
+        } else if (this.burnMeterBackground.scale.x < this.BURN_METER_MIN){
+            this.burnMeterBackground.scale.x = this.BURN_METER_MIN;
+        }
     }
 };
