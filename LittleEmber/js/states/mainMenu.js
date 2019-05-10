@@ -14,11 +14,12 @@ var MainMenu = function (game) {
              * TODO: Implement use of "finished" for Continue game feature
              */
             finished: false,
-                background: "grassBackground",
+            background: "grassBackground",
             obstacles: [
                 {
                     name: "branches",
                     burnable: true,
+                    burning: false,
                     hitBoxScaleX: 50,
                     hitBoxScaleY: 30,
                     hitBoxOffsetX: 10,
@@ -29,6 +30,8 @@ var MainMenu = function (game) {
                      burnedAnimationFrames: ["animation0", "animation1", "animation2"],
                      */
                     idleAnimationFrames: ["branches"],
+                    burningAnimationFrames: ["branchesBurning_01", "branchesBurning_02"],
+                    burnedAnimationFrames: ["ashes"],
                     /*** TODO: Use this structure when we have sound for our objects
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
@@ -39,6 +42,7 @@ var MainMenu = function (game) {
                 {
                     name: "bush",
                     burnable: true,
+                    burning: false,
                     hitBoxScaleX: 70,
                     hitBoxScaleY: 70,
                     hitBoxOffsetX: 10,
@@ -49,6 +53,8 @@ var MainMenu = function (game) {
                      burnedAnimationFrames: ["animation0", "animation1", "animation2"],
                      */
                     idleAnimationFrames: ["bush"],
+                    burningAnimationFrames: ["bushBurning_01", "bushBurning_02"],
+                    burnedAnimationFrames: ["ashes"],
                     /*** TODO: Use this structure when we have sound for our objects
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
@@ -59,6 +65,7 @@ var MainMenu = function (game) {
                 {
                     name: "flowers",
                     burnable: true,
+                    burning: false,
                     hitBoxScaleX: 50,
                     hitBoxScaleY: 30,
                     hitBoxOffsetX: 10,
@@ -69,6 +76,8 @@ var MainMenu = function (game) {
                      burnedAnimationFrames: ["animation0", "animation1", "animation2"],
                      */
                     idleAnimationFrames: ["flowers"],
+                    burningAnimationFrames: ["flowersBurning_01", "flowersBurning_02"],
+                    burnedAnimationFrames: ["ashes"],
                     /*** TODO: Use this structure when we have sound for our objects
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
@@ -94,13 +103,17 @@ MainMenu.prototype = {
         game.load.script("play", "js/states/play.js");
     },
     create: function () {
-        var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember" , {font: "Helvetica", fontSize: "60px", fill: "#fff"});
+        var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember", {font: "Helvetica", fontSize: "60px", fill: "#fff"});
         titleText.anchor.set(0.5);
         // briefly explain how to play- this will eventually be replaced by a legit tutorial
-        var toPlayText = game.add.text(game.width / 2, game.height / 4, "WASD to move, traverse over\nobjects to consume and grow" , {font: "Helvetica", fontSize: "36px", fill: "#fff"});
-		toPlayText.anchor.set(0.5);
+        var toPlayText = game.add.text(game.width / 2, game.height / 4, "WASD to move, traverse over\nobjects to consume and grow", {
+            font: "Helvetica",
+            fontSize: "36px",
+            fill: "#fff"
+        });
+        toPlayText.anchor.set(0.5);
         // Add buttons
-        var startButton = game.add.button(game.world.centerX, game.world.height / 2, "startButton", this.startGame, this, 0, 0, 1);
+        var startButton = game.add.button(game.world.centerX, game.world.height / 2, "atlas", this.startGame, this, "startButton", "startButton", "startButtonDown");
         startButton.anchor.set(0.5);
 
         console.log("State: MainMenu");
