@@ -17,6 +17,8 @@ function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yV
         this.x = this.body.width / 2;
     }
 
+    this.score = obstacle.score;
+
     // Set animations
     this.animations.add("idle", obstacle.idleAnimationFrames, 15, true, false);
     this.animations.add("burning", obstacle.burningAnimationFrames, 15, true, false);
