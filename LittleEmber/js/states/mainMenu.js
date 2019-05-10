@@ -36,8 +36,8 @@ var MainMenu = function (game) {
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
                      */
-                    burnMeterChange: 10,
-                    score: 100
+                    burnMeterChange: 0.1,
+                    score: 50
                 },
                 {
                     name: "bush",
@@ -59,8 +59,8 @@ var MainMenu = function (game) {
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
                      */
-                    burnMeterChange: -10,
-                    score: 200
+                    burnMeterChange: -0.2,
+                    score: 100
                 },
                 {
                     name: "flowers",
@@ -82,8 +82,8 @@ var MainMenu = function (game) {
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
                      */
-                    burnMeterChange: 5,
-                    score: 50
+                    burnMeterChange: 0.2,
+                    score: 25
                 }
             ],
             scoreGoal: 1000,
