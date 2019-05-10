@@ -111,6 +111,12 @@ MainMenu.prototype = {
             fontSize: "36px",
             fill: "#fff"
         });
+        var goal = game.add.text(game.width / 2, game.height / 3, "Reach score of " + this.LEVELS[1].scoreGoal + " to win the game!", {
+            font: "Helvetica",
+            fontSize: "36px",
+            fill: "#fff"
+        });
+        goal.anchor.set(0.5);
         toPlayText.anchor.set(0.5);
         // Add buttons
         var startButton = game.add.button(game.world.centerX, game.world.height / 2, "atlas", this.startGame, this, "startButton", "startButton", "startButtonDown");

@@ -39,6 +39,12 @@ Play.prototype = {
         game.time.events.loop(Phaser.Timer.SECOND * 2, this.createObstacle, this);
         this.previousObstacleIndex = 0;
         this.obstacles = game.add.group();
+
+        // Default score
+        this.score = 0;
+        this.scoreText = game.add.text(16, 16, "Score: 0", {fontSize: "32px", fill: "#000"});
+        this.scoreText.setShadow(3, 3, 'rgba(255,255,255,255)', 2);
+
         console.log("State: Play");
 
         // make player character
@@ -50,13 +56,19 @@ Play.prototype = {
         this.player.body.maxVelocity.set(this.PLAYER_MAX_VELOCITY);
         this.player.body.drag.set(700);
         this.player.body.collideWorldBounds = true;
+
+        game.state.add("GameOver", GameOver);
+
     },
     update: function () {
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
         // allow the player to exit game to GameOver state by pressing Q
         if (game.input.keyboard.isDown(Phaser.Keyboard.Q)) {
-            game.state.add("GameOver", GameOver);
-            game.state.start("GameOver");
+            game.state.start("GameOver", true, false, "Your flame flickers out...");
+        }
+        // Check if the score is met the finish level conditions
+        if (this.score >= this.LEVELS[this.level].scoreGoal) {
+            game.state.start("GameOver", true, false, "You burned everything in your way!");
         }
 
         // add player input checks
@@ -101,7 +113,7 @@ Play.prototype = {
         // Creating the obstacle
         do {
             var obstacleIndex = game.rnd.integerInRange(0, this.LEVELS[this.level].obstacles.length - 1);
-        } while (obstacleIndex == this.previousObstacleIndex);
+        } while (obstacleIndex === this.previousObstacleIndex);
 
         this.previousObstacleIndex = obstacleIndex;
 
@@ -125,9 +137,7 @@ Play.prototype = {
              * TODO: Add sound change here as well
              */
             game.time.events.add(Phaser.Timer.SECOND, this.switchToAshe, this, obstacle);
-            /***
-             * TODO: Add score and burn meter change here
-             */
+            this.changeScore(obstacle.score);
 
         }
     },
@@ -136,5 +146,9 @@ Play.prototype = {
          * TODO: Add sounds change here
          */
         obstacle.animations.play("ashe", true);
+    },
+    changeScore: function (scoreValue) {
+        this.score += scoreValue;
+        this.scoreText.text = "Score: " + this.score;
     }
 };
