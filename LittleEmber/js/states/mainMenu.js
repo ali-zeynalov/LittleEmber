@@ -86,7 +86,8 @@ var MainMenu = function (game) {
                     score: 50
                 }
             ],
-            scoreGoal: 1000
+            scoreGoal: 1000,
+            levelMusic: "lvl1"
         },
         {
             /***
@@ -101,6 +102,8 @@ MainMenu.prototype = {
     preload: function () {
         // Preload scripts
         game.load.script("play", "js/states/play.js");
+        this.menuMusic = game.add.audio("menuMusic");
+        this.menuMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
     },
     create: function () {
         var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember", {font: "Helvetica", fontSize: "60px", fill: "#fff"});
@@ -126,6 +129,7 @@ MainMenu.prototype = {
     },
     startGame: function () {
         // switch to play state
+        this.menuMusic.stop(); // don't play during levels
         game.state.add("Play", Play);
         game.state.start("Play", true, false, this.LEVELS, 1);
     }

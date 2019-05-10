@@ -18,6 +18,12 @@ Play.prototype = {
         game.load.script("transition", "js/states/transition.js");
         game.load.script("endLevelScore", "js/prefabs/endLevelScore.js");
         game.load.script("GameOver", "js/states/gameOver.js");
+        this.levelMusic = game.add.audio(this.LEVELS[this.level].levelMusic);
+        this.catchFire = game.add.audio("catchFire");
+        this.emberSound = game.add.audio("emberSound");
+        this.catchFire.allowMultiple = true;
+        this.levelMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
+        this.emberSound.play('', 0, 0.6, true);
 
         /***
          * TODO: prefab for score maybe WIP
@@ -64,10 +70,14 @@ Play.prototype = {
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
         // allow the player to exit game to GameOver state by pressing Q
         if (game.input.keyboard.isDown(Phaser.Keyboard.Q)) {
+            this.levelMusic.stop();
+            this.emberSound.stop();
             game.state.start("GameOver", true, false, "Your flame flickers out...");
         }
         // Check if the score is met the finish level conditions
         if (this.score >= this.LEVELS[this.level].scoreGoal) {
+            this.levelMusic.stop();
+            this.emberSound.stop();
             game.state.start("GameOver", true, false, "You burned everything in your way!");
         }
 
@@ -132,6 +142,7 @@ Play.prototype = {
     playerOverlap: function (player, obstacle) {
         if (!obstacle.burning) {
             obstacle.burning = true;
+            this.catchFire.play('', 0, 0.3, false);
             obstacle.animations.play("burning", true);
             /***
              * TODO: Add sound change here as well
