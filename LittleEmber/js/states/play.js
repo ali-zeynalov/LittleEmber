@@ -1,3 +1,10 @@
+/***
+ * Project: Little Ember
+ * Collaborators: Ali Zeynalov, William Taylor, Keren Franco
+ *
+ *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
+ */
+
 var Play = function (game) {
 
     this.SCROLLING_SPEED_GRASS = 5;
@@ -21,8 +28,6 @@ Play.prototype = {
     },
     preload: function () {
         // Load scripts
-        game.load.script("transition", "js/states/transition.js");
-        game.load.script("endLevelScore", "js/prefabs/endLevelScore.js");
         game.load.script("GameOver", "js/states/gameOver.js");
         this.levelMusic = game.add.audio(this.LEVELS[this.level].levelMusic);
         this.catchFire = game.add.audio("catchFire");
@@ -48,7 +53,7 @@ Play.prototype = {
         this.obstacles = game.add.group();
 
         // Every time spawns obstacles
-        game.time.events.loop(Phaser.Timer.SECOND * 2, this.createObstacle, this);
+        game.time.events.loop(Phaser.Timer.SECOND, this.createObstacle, this);
         this.previousObstacleIndex = 0;
         this.obstacles = game.add.group();
 
@@ -66,7 +71,6 @@ Play.prototype = {
         // player physics
         game.physics.enable(this.player, Phaser.Physics.ARCADE);
         this.player.body.maxVelocity.set(this.PLAYER_MAX_VELOCITY);
-        // this.player.body.drag.set(700);
         this.player.body.collideWorldBounds = true;
 
         // Burn meter

@@ -1,3 +1,10 @@
+/***
+ * Project: Little Ember
+ * Collaborators: Ali Zeynalov, William Taylor, Keren Franco
+ *
+ *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
+ */
+
 function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yVelocity, maxVelocity) {
     Phaser.Sprite.call(this, game, xPosition, yPosition, "atlas", obstacle.name);
     this.anchor.set(0.5);
