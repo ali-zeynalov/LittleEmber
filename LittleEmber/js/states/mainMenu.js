@@ -1,3 +1,10 @@
+/***
+ * Project: Little Ember
+ * Collaborators: Ali Zeynalov, William Taylor, Keren Franco
+ *
+ *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
+ */
+
 var MainMenu = function (game) {
 
     // Data that each level requires to run
@@ -14,7 +21,7 @@ var MainMenu = function (game) {
              * TODO: Implement use of "finished" for Continue game feature
              */
             finished: false,
-            background: "grassBackground",
+            background: "background_01",
             obstacles: [
                 {
                     name: "branches",
@@ -67,7 +74,7 @@ var MainMenu = function (game) {
                     burnable: true,
                     burning: false,
                     hitBoxScaleX: 50,
-                    hitBoxScaleY: 30,
+                    hitBoxScaleY: 50,
                     hitBoxOffsetX: 10,
                     hitBoxOffsetY: 5,
                     /*** TODO: Use this structure when we have animations for our objects
@@ -84,9 +91,78 @@ var MainMenu = function (game) {
                      */
                     burnMeterChange: 0.2,
                     score: 25
+                },
+                {
+                    name: "cup",
+                    burnable: true,
+                    burning: false,
+                    hitBoxScaleX: 40,
+                    hitBoxScaleY: 40,
+                    hitBoxOffsetX: 2,
+                    hitBoxOffsetY: 7,
+                    /*** TODO: Use this structure when we have animations for our objects
+                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
+                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
+                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
+                     */
+                    idleAnimationFrames: ["cup"],
+                    burningAnimationFrames: ["cupBurning_01", "cupBurning_02"],
+                    burnedAnimationFrames: ["ashes"],
+                    /*** TODO: Use this structure when we have sound for our objects
+                     defaultSoundName: "defaultSound",
+                     burningSoundName: "burningSound"
+                     */
+                    burnMeterChange: 0.05,
+                    score: 50
+                },
+                {
+                    name: "wrapper",
+                    burnable: true,
+                    burning: false,
+                    hitBoxScaleX: 40,
+                    hitBoxScaleY: 40,
+                    hitBoxOffsetX: 7,
+                    hitBoxOffsetY: 5,
+                    /*** TODO: Use this structure when we have animations for our objects
+                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
+                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
+                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
+                     */
+                    idleAnimationFrames: ["wrapper"],
+                    burningAnimationFrames: ["wrapperBurning_01", "wrapperBurning_02"],
+                    burnedAnimationFrames: ["ashes"],
+                    /*** TODO: Use this structure when we have sound for our objects
+                     defaultSoundName: "defaultSound",
+                     burningSoundName: "burningSound"
+                     */
+                    burnMeterChange: 0.05,
+                    score: 75
+                },
+                {
+                    name: "cricket",
+                    burnable: true,
+                    burning: false,
+                    hitBoxScaleX: 50,
+                    hitBoxScaleY: 30,
+                    hitBoxOffsetX: 0,
+                    hitBoxOffsetY: 15,
+                    /*** TODO: Use this structure when we have animations for our objects
+                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
+                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
+                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
+                     */
+                    idleAnimationFrames: ["cricket"],
+                    burningAnimationFrames: ["cricketBurning_01", "cricketBurning_02"],
+                    burnedAnimationFrames: ["ashes"],
+                    /*** TODO: Use this structure when we have sound for our objects
+                     defaultSoundName: "defaultSound",
+                     burningSoundName: "burningSound"
+                     */
+                    burnMeterChange: -0.1,
+                    score: 100
                 }
             ],
-            scoreGoal: 1000,
+            scoreGoal: 2500,
             levelMusic: "lvl1"
         },
         {
@@ -106,19 +182,26 @@ MainMenu.prototype = {
         this.menuMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
     },
     create: function () {
-        var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember", {font: "Helvetica", fontSize: "60px", fill: "#fff"});
+
+        this.menuBackground = game.add.sprite(0, 0, "mainMenuBackground");
+
+        var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember", {font: "Helvetica", fontSize: "60px", fill: "#faba45"});
         titleText.anchor.set(0.5);
         // briefly explain how to play- this will eventually be replaced by a legit tutorial
         var toPlayText = game.add.text(game.width / 2, game.height / 4, "WASD to move, traverse over\nobjects to consume and grow", {
             font: "Helvetica",
             fontSize: "36px",
-            fill: "#fff"
+            fill: "#faba45"
         });
         var goal = game.add.text(game.width / 2, game.height / 3, "Reach score of " + this.LEVELS[1].scoreGoal + " to win the game!", {
             font: "Helvetica",
             fontSize: "36px",
-            fill: "#fff"
+            fill: "#faba45"
         });
+        titleText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+        toPlayText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+        goal.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+
         goal.anchor.set(0.5);
         toPlayText.anchor.set(0.5);
         // Add buttons
