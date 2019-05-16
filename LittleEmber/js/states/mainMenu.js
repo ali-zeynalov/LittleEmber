@@ -160,8 +160,35 @@ var MainMenu = function (game) {
                      */
                     burnMeterChange: -0.1,
                     score: 100
+                },
+                {
+                    name: "puddle",
+                    burnable: false,
+                    burning: false,
+                    hitBoxScaleX: 100,
+                    hitBoxScaleY: 70,
+                    hitBoxOffsetX: 10,
+                    hitBoxOffsetY: 0,
+                    /*** TODO: Use this structure when we have animations for our objects
+                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
+                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
+                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
+                     */
+                    idleAnimationFrames: ["puddle"],
+                    burningAnimationFrames: ["puddle"],
+                    burnedAnimationFrames: ["puddle"],
+                    /*** TODO: Use this structure when we have sound for our objects
+                     defaultSoundName: "defaultSound",
+                     burningSoundName: "burningSound"
+                     */
+                    burnMeterChange: -0.4,
+                    score: -50
                 }
             ],
+            eventName : "waterDropOutline",
+            eventWarning: ["waterDropOutline"],
+            eventAnimation: ["waterDrop_01", "waterDrop_02", "waterDrop_03", "waterDrop_04", "waterDrop_05", "waterDrop_06", "waterDrop_07", "waterDrop_08",
+                "waterDrop_09", "waterDrop_10"],
             scoreGoal: 2500,
             levelMusic: "lvl1"
         },
@@ -182,33 +209,16 @@ MainMenu.prototype = {
         this.menuMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
     },
     create: function () {
-
         this.menuBackground = game.add.sprite(0, 0, "mainMenuBackground");
 
+        // Name of our game
         var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember", {font: "Helvetica", fontSize: "60px", fill: "#faba45"});
         titleText.anchor.set(0.5);
-        // briefly explain how to play- this will eventually be replaced by a legit tutorial
-        var toPlayText = game.add.text(game.width / 2, game.height / 4, "WASD to move, traverse over\nobjects to consume and grow", {
-            font: "Helvetica",
-            fontSize: "36px",
-            fill: "#faba45"
-        });
-        var goal = game.add.text(game.width / 2, game.height / 3, "Reach score of " + this.LEVELS[1].scoreGoal + " to win the game!", {
-            font: "Helvetica",
-            fontSize: "36px",
-            fill: "#faba45"
-        });
         titleText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
-        toPlayText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
-        goal.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
 
-        goal.anchor.set(0.5);
-        toPlayText.anchor.set(0.5);
         // Add buttons
         var startButton = game.add.button(game.world.centerX, game.world.height / 2, "atlas", this.startGame, this, "startButton", "startButton", "startButtonDown");
         startButton.anchor.set(0.5);
-
-        console.log("State: MainMenu");
     },
     startGame: function () {
         // switch to play state
