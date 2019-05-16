@@ -16,6 +16,10 @@ function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yV
     this.body.setSize(obstacle.hitBoxScaleX, obstacle.hitBoxScaleY, obstacle.hitBoxOffsetX, obstacle.hitBoxOffsetY);
     this.scale.x = direction;
 
+    // Extra parameters
+    this.burnable = obstacle.burnable;
+    this.burning = obstacle.burning;
+
     // Check for right spawning coordinates
     if (this.x + this.body.width / 2 > game.world.width) {
         this.x = game.world.width - this.body.width / 2;

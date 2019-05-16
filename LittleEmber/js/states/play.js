@@ -13,7 +13,9 @@ var Play = function (game) {
     this.OBSTACLE_MAX_VELOCITY = 500;
 
     this.PLAYER_VELOCITY_CHANGE = 75;
-    this.PLAYER_MAX_VELOCITY = 300;
+    this.PLAYER_MAX_VELOCITY_X = 300;
+    this.PLAYER_MAX_VELOCITY_Y = 360;
+    this.PLAYER_STATINARY_VELOCITY_Y = 100;
 
     this.BURN_METER_MAX = -0.02;
     this.BURN_METER_MIN = -0.97;
@@ -49,20 +51,29 @@ Play.prototype = {
         // Scrolling background
         this.grassBg = game.add.tileSprite(0, 0, 600, 800, this.LEVELS[this.level].background);
 
-        // Group that holds all of the obstacles
-        this.obstacles = game.add.group();
-
-        // Every time spawns obstacles
-        game.time.events.loop(Phaser.Timer.SECOND, this.createObstacle, this);
-        this.previousObstacleIndex = 0;
-        this.obstacles = game.add.group();
-
         // Default score
         this.score = 0;
         this.scoreText = game.add.text(16, 16, "Score: 0", {fontSize: "32px", fill: "#000"});
         this.scoreText.setShadow(3, 3, 'rgba(255,255,255,255)', 2);
 
-        console.log("State: Play");
+        // Group that holds all of the obstacles
+        this.obstacles = game.add.group();
+        this.levelEvents = game.add.group();
+
+        // group for showing instructions to the player
+        this.instructions = game.add.group();
+        this.controlsInstruction = game.add.sprite(game.world.width / 5, game.world.height / 3, "atlas", "controls");
+        this.controlsInstruction.anchor.set(0.5);
+        this.controlsInstruction.animations.add("burning", ["controlsBurning_01", "controlsBurning_02"], 15, true);
+        game.physics.enable(this.controlsInstruction, Phaser.Physics.ARCADE);
+
+        this.levelInstructions = game.add.sprite(game.world.width - game.world.width / 5, game.world.height / 3, "atlas", "instructions");
+        this.levelInstructions.anchor.set(0.5);
+        this.levelInstructions.animations.add("burning", ["instructionsBurning_01", "instructionsBurning_02"], 15, true);
+        game.physics.enable(this.levelInstructions, Phaser.Physics.ARCADE);
+
+        this.instructions.add(this.controlsInstruction);
+        this.instructions.add(this.levelInstructions);
 
         // make player character
         this.player = game.add.sprite(game.world.width / 2, game.world.height - 50, "atlas", "littleEmber"); // for atlas: (x, y, nameOfAtlas, assetNameInAtlas)
@@ -70,7 +81,8 @@ Play.prototype = {
         this.player.anchor.set(0.5); // center the mass of player character
         // player physics
         game.physics.enable(this.player, Phaser.Physics.ARCADE);
-        this.player.body.maxVelocity.set(this.PLAYER_MAX_VELOCITY);
+        this.player.body.maxVelocity.x = this.PLAYER_MAX_VELOCITY_X;
+        this.player.body.maxVelocity.y = this.PLAYER_MAX_VELOCITY_Y;
         this.player.body.collideWorldBounds = true;
 
         // Burn meter
@@ -81,12 +93,17 @@ Play.prototype = {
         this.burnMeterBackground.scale.x = this.BURN_METER_MAX;
         this.burnMeterCutout = game.add.sprite(game.world.width - 220, 0, "atlas", "burnMeterCutout");
 
-        game.time.events.loop(Phaser.Timer.SECOND / 2, this.burnMeterConstantChange, this);
-
         game.state.add("GameOver", GameOver);
+
+        this.startGame = false;
 
     },
     update: function () {
+        // Check if player is ready
+        if (!this.startGame) {
+            this.isPlayerReady();
+        }
+
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
         // allow the player to exit game to GameOver state by pressing Q
         if (game.input.keyboard.isDown(Phaser.Keyboard.Q) || this.burnMeterBackground.scale.x <= this.BURN_METER_MIN) {
@@ -105,38 +122,51 @@ Play.prototype = {
         // since they're not in else ifs, we should be able to get combinatorial movement
         // these combo movements are not as fast as they should technically be, so might add
         // euclidian combinatorial directionns instead
-        if (game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+        if ((game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.UP)) &&
+            (!game.input.keyboard.isDown(Phaser.Keyboard.S) && !game.input.keyboard.isDown(Phaser.Keyboard.DOWN))) {
+
             this.player.body.velocity.y -= this.PLAYER_VELOCITY_CHANGE;
-        }
-        if (game.input.keyboard.isDown(Phaser.Keyboard.S)) {
+
+        } else if ((game.input.keyboard.isDown(Phaser.Keyboard.S) || game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) &&
+            (!game.input.keyboard.isDown(Phaser.Keyboard.W) && !game.input.keyboard.isDown(Phaser.Keyboard.UP))) {
+
             this.player.body.velocity.y += this.PLAYER_VELOCITY_CHANGE;
-        }
-        if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
-            this.player.body.velocity.x -= this.PLAYER_VELOCITY_CHANGE;
-        }
-        if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
-            this.player.body.velocity.x += this.PLAYER_VELOCITY_CHANGE;
-        }
-        // if stuff isn't being held down to move, slow to a stop
-        if (!game.input.keyboard.isDown(Phaser.Keyboard.W) && !game.input.keyboard.isDown(Phaser.Keyboard.S)) {
-            if (this.player.body.velocity.y > this.PLAYER_MAX_VELOCITY) { // if we were going down
-                this.player.body.velocity.y -= 15;
-            }
-            else if (this.player.body.velocity.y < this.PLAYER_MAX_VELOCITY) { // if we were going up
+
+        } else {
+            if (this.player.body.velocity.y <= 0) {
+                // if player is moving up slow it down to 0
                 this.player.body.velocity.y += 30;
+            } else {
+                // slowly fall to the bottom of the screen
+                this.player.body.velocity.y = this.PLAYER_STATINARY_VELOCITY_Y;
             }
         }
-        if (!game.input.keyboard.isDown(Phaser.Keyboard.A) && !game.input.keyboard.isDown(Phaser.Keyboard.D)) {
-            if (this.player.body.velocity.x > 0) { // if we were going down
+
+        if ((game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) &&
+            (!game.input.keyboard.isDown(Phaser.Keyboard.D) && !game.input.keyboard.isDown(Phaser.Keyboard.RIGHT))) {
+
+            this.player.body.velocity.x -= this.PLAYER_VELOCITY_CHANGE;
+
+        } else if ((game.input.keyboard.isDown(Phaser.Keyboard.D) || game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) &&
+            (!game.input.keyboard.isDown(Phaser.Keyboard.A) && !game.input.keyboard.isDown(Phaser.Keyboard.LEFT))) {
+
+            this.player.body.velocity.x += this.PLAYER_VELOCITY_CHANGE;
+
+        } else {
+            if (this.player.body.velocity.x > 0) {
+                // if player is moving right
                 this.player.body.velocity.x -= 15;
             }
-            else if (this.player.body.velocity.x < 0) { // if we were going up
+            else if (this.player.body.velocity.x < 0) {
+                // if player is moving left
                 this.player.body.velocity.x += 15;
             }
         }
 
         // Player overlapping objects
         game.physics.arcade.overlap(this.player, this.obstacles, this.playerOverlap, null, this);
+        game.physics.arcade.overlap(this.player, this.instructions, this.burnInstructions, null, this);
+
 
     },
     createObstacle: function () {
@@ -162,12 +192,18 @@ Play.prototype = {
     playerOverlap: function (player, obstacle) {
         if (!obstacle.burning) {
             obstacle.burning = true;
-            this.catchFire.play('', 0, 0.3, false);
-            obstacle.animations.play("burning", true);
-            /***
-             * TODO: Add sound change here as well
-             */
-            game.time.events.add(Phaser.Timer.SECOND, this.switchToAshe, this, obstacle);
+            if (obstacle.burnable) {
+
+                this.catchFire.play('', 0, 0.3, false);
+                obstacle.animations.play("burning", true);
+                game.time.events.add(Phaser.Timer.SECOND, this.switchToAshe, this, obstacle);
+
+            } else {
+
+                /***
+                 * TODO: Play extinguishing fire sound
+                 */
+            }
             this.changeScore(obstacle.score);
             this.updateBurnMeter(obstacle.burnMeterChange);
         }
@@ -191,8 +227,60 @@ Play.prototype = {
         this.burnMeterBackground.scale.x += value;
         if (this.burnMeterBackground.scale.x > this.BURN_METER_MAX) {
             this.burnMeterBackground.scale.x = this.BURN_METER_MAX;
-        } else if (this.burnMeterBackground.scale.x < this.BURN_METER_MIN){
+        } else if (this.burnMeterBackground.scale.x < this.BURN_METER_MIN) {
             this.burnMeterBackground.scale.x = this.BURN_METER_MIN;
         }
+    },
+    isPlayerReady: function () {
+        if (this.instructions.length === 0) {
+            // updated value to start the game
+            this.startGame = true;
+
+            // Every time spawns obstacles
+            game.time.events.loop(Phaser.Timer.SECOND, this.createObstacle, this);
+            this.previousObstacleIndex = 0;
+
+            // Start the burn meter
+            game.time.events.loop(Phaser.Timer.SECOND / 2, this.burnMeterConstantChange, this);
+
+            // Play event
+            game.time.events.loop(Phaser.Timer.SECOND * 5, this.levelEvent, this);
+
+        }
+    },
+    burnInstructions: function (player, instructionBoard) {
+        if (instructionBoard.animations.currentAnim !== "burning") {
+            instructionBoard.animations.play("burning");
+            game.time.events.add(Phaser.Timer.SECOND, this.destroyInstructions, this, instructionBoard);
+        }
+    },
+    destroyInstructions: function (instructionBoard) {
+        instructionBoard.destroy();
+    },
+    levelEvent: function () {
+        // spawn event at a random spot and add properties to it
+        var x = game.rnd.integerInRange(0, game.world.width);
+        var y = game.rnd.integerInRange(200, game.world.height);
+        this.eventLevel = game.add.sprite(x, y, "atlas", this.LEVELS[this.level].eventName);
+        this.eventLevel.anchor.set(0.5);
+        this.eventLevel.animations.add("trigger", this.LEVELS[this.level].eventAnimation, 15, false);
+
+        game.physics.enable(this.eventLevel, Phaser.Physics.ARCADE);
+
+        // play the animation after 2 seconds of the spawn
+        game.time.events.add(Phaser.Timer.SECOND * 2, this.levelEventAnimation, this, this.eventLevel);
+
+    },
+    levelEventAnimation: function (eventLevel) {
+        eventLevel.play("trigger");
+        eventLevel.animations.currentAnim.onComplete.add(this.eventAnimationStopped, this);
+    },
+    eventAnimationStopped: function () {
+        game.physics.arcade.overlap(this.player, this.eventLevel, this.hitByAnEvent, null, this);
+        this.eventLevel.destroy();
+
+    },
+    hitByAnEvent: function (player, event) {
+        this.updateBurnMeter(-0.5);
     }
 };

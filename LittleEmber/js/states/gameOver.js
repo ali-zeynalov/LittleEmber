@@ -23,8 +23,6 @@ GameOver.prototype = {
         var endText = game.add.text(game.width / 2, game.height / 3, this.msg, {font: "Helvetica", fontSize: "36px", fill: "#faba45"});
         endText.anchor.set(0.5);
         endText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
-
-        console.log("State: GameOver");
     },
     titleScreen: function () {
         // switch to MainMenu state
