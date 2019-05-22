@@ -17,7 +17,7 @@ GameOver.prototype = {
 
         // returns player to the title screen
         var returnButton = game.add.button(game.world.centerX, game.world.height / 2, "atlas", this.titleScreen, this,
-            "startButton", "startButton", "startButtonDown");
+            "continueButton", "continueButton", "continueButtonDown");
         returnButton.anchor.set(0.5);
 
         var endText = game.add.text(game.width / 2, game.height / 3, this.msg, {font: "Helvetica", fontSize: "36px", fill: "#faba45"});
