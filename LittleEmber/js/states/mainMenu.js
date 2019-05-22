@@ -89,7 +89,7 @@ var MainMenu = function (game) {
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
                      */
-                    burnMeterChange: 0.2,
+                    burnMeterChange: 0.1,
                     score: 25
                 },
                 {
@@ -112,7 +112,7 @@ var MainMenu = function (game) {
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
                      */
-                    burnMeterChange: 0.05,
+                    burnMeterChange: 0.08,
                     score: 50
                 },
                 {
@@ -135,7 +135,7 @@ var MainMenu = function (game) {
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
                      */
-                    burnMeterChange: 0.05,
+                    burnMeterChange: 0.08,
                     score: 75
                 },
                 {
@@ -158,7 +158,7 @@ var MainMenu = function (game) {
                      defaultSoundName: "defaultSound",
                      burningSoundName: "burningSound"
                      */
-                    burnMeterChange: -0.1,
+                    burnMeterChange: -0.05,
                     score: 100
                 },
                 {
@@ -166,9 +166,9 @@ var MainMenu = function (game) {
                     burnable: false,
                     burning: false,
                     hitBoxScaleX: 100,
-                    hitBoxScaleY: 70,
+                    hitBoxScaleY: 60,
                     hitBoxOffsetX: 10,
-                    hitBoxOffsetY: 0,
+                    hitBoxOffsetY: 10,
                     /*** TODO: Use this structure when we have animations for our objects
                      idleAnimationFrames: ["animation0", "animation1", "animation2"],
                      burningAnimationFrames: ["animation0", "animation1", "animation2"],
@@ -185,11 +185,24 @@ var MainMenu = function (game) {
                     score: -50
                 }
             ],
-            eventName : "waterDropOutline",
-            eventWarning: ["waterDropOutline"],
-            eventAnimation: ["waterDrop_01", "waterDrop_02", "waterDrop_03", "waterDrop_04", "waterDrop_05", "waterDrop_06", "waterDrop_07", "waterDrop_08",
-                "waterDrop_09", "waterDrop_10"],
-            scoreGoal: 2500,
+            eventLevel: {
+                name: "waterDropOutline",
+                // Type 1: Expanding, 2: Blinking
+                type: 1,
+                mainAnimation: ["waterDrop_01", "waterDrop_02", "waterDrop_03", "waterDrop_04", "waterDrop_05", "waterDrop_06", "waterDrop_07", "waterDrop_08",
+                    "waterDrop_09", "waterDrop_10"]
+            },
+            score: {
+                goal: 2500,
+
+                currentTimeClear: "",
+                currentHighestCombo: 0,
+                currentScore: 0,
+
+                bestTimeClear: "",
+                bestHighestCombo: 0,
+                bestScore: 0
+            },
             levelMusic: "lvl1"
         },
         {
@@ -217,7 +230,8 @@ MainMenu.prototype = {
         titleText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
 
         // Add buttons
-        var startButton = game.add.button(game.world.centerX, game.world.height / 2, "atlas", this.startGame, this, "startButton", "startButton", "startButtonDown");
+        var startButton = game.add.button(game.world.centerX, game.world.height / 3, "atlas", this.startGame, this, "newGameButton", "newGameButton",
+            "newGameButtonDown");
         startButton.anchor.set(0.5);
     },
     startGame: function () {
