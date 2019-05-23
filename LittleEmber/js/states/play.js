@@ -36,13 +36,13 @@ Play.prototype = {
 
     },
     create: function () {
-        // Audio
         this.levelMusic = game.add.audio(this.LEVELS[this.level].levelMusic);
         this.catchFire = game.add.audio("catchFire");
         this.emberSound = game.add.audio("emberSound");
         this.catchFire.allowMultiple = true;
         this.levelMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
         this.emberSound.play('', 0, 0.6, true);
+        this.flameSizzle = game.add.audio("flameSizzle");
 
         // Arcade physics
         game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -89,11 +89,15 @@ Play.prototype = {
         this.controlsInstruction = game.add.sprite(game.world.width / 5, game.world.height / 3, "atlas", "controls");
         this.controlsInstruction.anchor.set(0.5);
         this.controlsInstruction.animations.add("burning", ["controlsBurning_01", "controlsBurning_02"], 15, true);
+        this.controlsInstruction.animations.add("idle", ["controls"], 15, false);
+        this.controlsInstruction.animations.play("idle");
         game.physics.enable(this.controlsInstruction, Phaser.Physics.ARCADE);
 
         this.levelInstructions = game.add.sprite(game.world.width - game.world.width / 5, game.world.height / 3, "atlas", "instructions");
         this.levelInstructions.anchor.set(0.5);
         this.levelInstructions.animations.add("burning", ["instructionsBurning_01", "instructionsBurning_02"], 15, true);
+        this.levelInstructions.animations.add("idle", ["instructions"], 15, false);
+        this.levelInstructions.animations.play("idle");
         game.physics.enable(this.levelInstructions, Phaser.Physics.ARCADE);
 
         this.instructions.add(this.controlsInstruction);
@@ -117,7 +121,6 @@ Play.prototype = {
 
     },
     update: function () {
-        console.log(this.player.scale.x);
         // Check if player is ready
         if (!this.startGame) {
             this.isPlayerReady();
@@ -137,7 +140,7 @@ Play.prototype = {
             this.levelMusic.stop();
             this.emberSound.stop();
 
-            // game.sound.stopAll();
+            game.sound.stopAll();
 
             game.state.start("GameOver", true, false, "Your flame flickers out...");
         }
@@ -146,7 +149,7 @@ Play.prototype = {
             this.levelMusic.stop();
             this.emberSound.stop();
 
-            // game.sound.stopAll();
+            game.sound.stopAll();
 
             game.state.start("GameOver", true, false, "You burned everything in your way!");
         }
@@ -200,6 +203,7 @@ Play.prototype = {
         game.physics.arcade.overlap(this.player, this.obstacles, this.obstacleOverlap, null, this);
         game.physics.arcade.overlap(this.player, this.instructions, this.burnInstructions, null, this);
         game.physics.arcade.overlap(this.player, this.gales, this.boostPlayerUp, null, this);
+        game.physics.arcade.overlap(this.player, this.instructions, this.burnInstructions, null, this);
 
     },
     createObstacle: function () {
@@ -230,16 +234,19 @@ Play.prototype = {
                 this.catchFire.play('', 0, 0.3, false);
                 obstacle.animations.play("burning", true);
                 game.time.events.add(Phaser.Timer.SECOND, this.switchToAshe, this, obstacle);
+                if (obstacle.defaultSoundName !== undefined){
+                    obstacle.defaultSoundName.stop();
+                }
 
+                if (obstacle.burningSoundName !== undefined){
+                    obstacle.burningSoundName.play('', 0, 0.3, true);
+                }
             } else {
                 if (this.combo > 1) {
                     this.playerBurnMeter += this.combo / 100;
                 }
                 this.combo = 0;
-
-                /***
-                 * TODO: Play extinguishing fire sound
-                 */
+                this.flameSizzle.play('', 0, 0.3, false);
             }
             this.updateScore(obstacle.score);
             this.updateCombo();
@@ -247,9 +254,9 @@ Play.prototype = {
         }
     },
     switchToAshe: function (obstacle) {
-        /***
-         * TODO: Add sounds change here
-         */
+        if (obstacle.burningSoundName !== undefined) {
+            obstacle.burningSoundName.stop();
+        }
         obstacle.animations.play("ashe", true);
     },
     updateScore: function (scoreValue) {
@@ -309,8 +316,9 @@ Play.prototype = {
         }
     },
     burnInstructions: function (player, instructionBoard) {
-        if (instructionBoard.animations.currentAnim !== "burning") {
+        if (instructionBoard.animations.currentAnim.name !== "burning") {
             instructionBoard.animations.play("burning");
+            this.catchFire.play('', 0, 0.3, false);
             game.time.events.add(Phaser.Timer.SECOND, this.destroyInstructions, this, instructionBoard);
         }
     },
@@ -325,7 +333,6 @@ Play.prototype = {
         this.eventLevel.anchor.set(0.5);
         this.eventLevel.scale.setTo(0.1);
         this.eventLevel.animations.add("trigger", this.LEVELS[this.level].eventLevel.mainAnimation, 15, false);
-
         game.physics.enable(this.eventLevel, Phaser.Physics.ARCADE);
         this.eventLevel.body.setCircle(100);
 
@@ -349,6 +356,7 @@ Play.prototype = {
         if (this.combo > 1) {
             this.playerBurnMeter += this.combo / 100;
         }
+        this.flameSizzle.play('', 0, 0.3, false);
         this.combo = 0;
         this.updateCombo();
         this.updateBurnMeter(-0.5);

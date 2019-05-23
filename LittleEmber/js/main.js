@@ -20,6 +20,11 @@ function preload() {
     game.load.audio("lvl1", ["assets/audio/lvl1.mp3"]);
     game.load.audio("emberSound", ["assets/audio/emberSound.mp3"]);
     game.load.audio("catchFire", ["assets/audio/catchFire.mp3"]);
+    game.load.audio("flameSizzle", ["assets/audio/flameSizzle.mp3"]);
+    game.load.audio("waterDrop", ["assets/audio/waterDrop.mp3"]);
+
+    game.load.audio("cricketNorm", ["assets/audio/cricketNorm.mp3"]);
+    game.load.audio("cricketFire", ["assets/audio/cricketFire.mp3"]);
 }
 
 function create() {
