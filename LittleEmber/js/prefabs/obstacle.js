@@ -20,7 +20,18 @@ function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yV
     this.burnable = obstacle.burnable;
     this.burning = obstacle.burning;
 
+    // console.log(obstacle.defaultSoundName);
+    if (obstacle.defaultSoundName !== undefined) {
+        this.defaultSoundName = game.add.audio(obstacle.defaultSoundName);
+        this.defaultSoundName.play();
+    }
+
+    if (obstacle.burningSoundName !== undefined) {
+        this.burningSoundName = game.add.audio(obstacle.burningSoundName);
+    }
+
     // Check for right spawning coordinates
+
     if (this.x + this.body.width / 2 > game.world.width) {
         this.x = game.world.width - this.body.width / 2;
     }
@@ -49,6 +60,9 @@ Obstacle.prototype.update = function () {
 
     // Destroy object if outside of the game bounds
     if (this.body.position.y > game.world.height + this.body.height) {
+        if (this.burningSoundName !== undefined) {
+            this.defaultSoundName.stop();
+        }
         this.destroy();
     }
 };

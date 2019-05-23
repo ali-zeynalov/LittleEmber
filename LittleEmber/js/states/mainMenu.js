@@ -154,10 +154,9 @@ var MainMenu = function (game) {
                     idleAnimationFrames: ["cricket"],
                     burningAnimationFrames: ["cricketBurning_01", "cricketBurning_02"],
                     burnedAnimationFrames: ["ashes"],
-                    /*** TODO: Use this structure when we have sound for our objects
-                     defaultSoundName: "defaultSound",
-                     burningSoundName: "burningSound"
-                     */
+                    defaultSoundName: "cricketNorm",
+                    burningSoundName: "cricketFire",
+
                     burnMeterChange: -0.05,
                     score: 100
                 },
@@ -225,7 +224,11 @@ MainMenu.prototype = {
         this.menuBackground = game.add.sprite(0, 0, "mainMenuBackground");
 
         // Name of our game
-        var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember", {font: "Helvetica", fontSize: "60px", fill: "#faba45"});
+        var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember", {
+            font: "Helvetica",
+            fontSize: "60px",
+            fill: "#faba45"
+        });
         titleText.anchor.set(0.5);
         titleText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
 
