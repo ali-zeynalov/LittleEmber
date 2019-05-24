@@ -120,10 +120,7 @@ Play.prototype = {
         this.player.body.maxVelocity.y = this.PLAYER_MAX_VELOCITY_Y;
         this.player.body.collideWorldBounds = true;
 
-        game.state.add("GameOver", GameOver);
-
         this.startGame = false;
-
     },
     update: function () {
         // Check if player is ready
@@ -156,6 +153,7 @@ Play.prototype = {
 
             localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
             game.sound.stopAll();
+            game.state.add("GameOver", GameOver);
             game.state.start("GameOver", true, false, msg);
         }
 
