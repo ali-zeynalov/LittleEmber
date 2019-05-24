@@ -55,7 +55,9 @@ Play.prototype = {
 
         // Gales mechanic at the bottom of the screen
         this.playerBoosted = false;
-        this.gales = game.add.tileSprite(0, game.world.height - 65, 600, 65, "atlas", "gales");
+        this.gales = game.add.tileSprite(0, game.world.height - 65, 600, 65, "atlas", "gale_01");
+        this.gales.animations.add("gales", ["gale_01", "gale_02", "gale_03", "gale_04", "gale_05", "gale_06"], 15, true);
+        this.gales.animations.play("gales");
         game.physics.enable(this.gales, Phaser.Physics.ARCADE);
 
         // Default score
@@ -135,7 +137,7 @@ Play.prototype = {
         }
 
         // Movement of the gales and background sprites
-        this.gales.tilePosition.x += 10;
+        this.gales.tilePosition.x -= 10;
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
 
         // allow the player to exit game to GameOver state by pressing Q
