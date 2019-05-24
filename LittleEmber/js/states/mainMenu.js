@@ -100,16 +100,16 @@ MainMenu.prototype = {
             localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
         }
 
-        console.log("Best All Time Combo: " + LEVELS[1].score.bestHighestCombo);
-        console.log("Best All Time Score: " + LEVELS[1].score.bestScore);
-        console.log("Best All Time Clear: " + LEVELS[1].score.bestTimeClear);
-        console.log("===================");
+        // console.log("Best All Time Combo: " + LEVELS[1].score.bestHighestCombo);
+        // console.log("Best All Time Score: " + LEVELS[1].score.bestScore);
+        // console.log("Best All Time Clear: " + LEVELS[1].score.bestTimeClear);
+        // console.log("===================");
 
         this.menuBackground = game.add.sprite(0, 0, "mainMenuBackground");
 
         // Name of our game
-        var titleText = game.add.text(game.width / 2, game.height / 8, "Little Ember", {
-            font: "Helvetica",
+        var titleText = game.add.text(game.world.width / 2, game.world.height / 8, "Little Ember", {
+            font: "Comic Sans MS",
             fontSize: "60px",
             fill: "#faba45"
         });
@@ -129,6 +129,42 @@ MainMenu.prototype = {
         this.levelButtons = game.add.group();
 
         this.switchingStates = false;
+
+        // Show player their previous stats
+        var textStyle = {
+            font: "Comic Sans MS",
+            fontSize: "48px",
+            fill: "#fa8b1d"
+        };
+
+        this.bestLevelStatsTitle = game.add.text(game.world.width / 2, game.world.height - game.world.height / 3, "", textStyle);
+        this.bestLevelStatsTitle.anchor.set(0.5);
+        this.bestLevelStatsTitle.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+
+        var textStyle = {
+            font: "Comic Sans MS",
+            fontSize: "28px",
+            fill: "#fa8b1d",
+            align: "left",
+            lineSpacing: "1px"
+        };
+
+        this.bestAllTimeStats = game.add.text(20, game.world.height - game.world.height / 7, "", textStyle);
+        this.bestAllTimeStats.anchor.set(0, 0.5);
+        this.bestAllTimeStats.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+
+        var textStyle = {
+            font: "Comic Sans MS",
+            fontSize: "28px",
+            fill: "#fa8b1d",
+            align: "right",
+            lineSpacing: "1px"
+        };
+
+        this.bestRun = game.add.text(game.world.width - 20, game.world.height - game.world.height / 7, "", textStyle);
+        this.bestRun.anchor.set(1, 0.5);
+        this.bestRun.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+
 
     },
     update: function () {
@@ -188,8 +224,12 @@ MainMenu.prototype = {
         // Updates main menu
         if (!this.LEVEL_SELECT.levelSelect) {
             this.updateMenu(false);
+            this.bestLevelStatsTitle.text = "";
+            this.bestAllTimeStats.text = "";
+            this.bestRun.text = "";
         } else {
             this.updateLevelSelect(false);
+            this.showBestStats();
         }
 
     },
@@ -424,5 +464,26 @@ MainMenu.prototype = {
             }
 
         }
+    },
+    showBestStats: function () {
+        // Show on the screen the stats for specific level
+        var levelTitle = "Level " + (this.levelSelectPointer + 1) + " Stats";
+        this.bestLevelStatsTitle.text = levelTitle;
+
+        var bestTime = "Best Time: ";
+
+        if (LEVELS[this.levelSelectPointer + 1].score.bestTimeClear / 60 >= 1) {
+            bestTime += Math.floor(LEVELS[this.levelSelectPointer + 1].score.bestTimeClear / 60) + "m ";
+        }
+        bestTime += Math.round(LEVELS[this.levelSelectPointer + 1].score.bestTimeClear % 60) + "s\n";
+
+        var bestCombo = "Highest Combo: " + LEVELS[this.levelSelectPointer + 1].score.bestHighestCombo + "\n";
+
+        var bestScore = "Highest Score: " + LEVELS[this.levelSelectPointer + 1].score.bestScore + "\n";
+        var bestAllTimeStats = bestTime + bestCombo + bestScore;
+        this.bestAllTimeStats.text = bestAllTimeStats;
+
+        this.bestRun.text = "TODO: Best Run\nStats go here";
+
     }
 };

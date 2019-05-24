@@ -382,19 +382,19 @@ Play.prototype = {
         LEVELS[this.level].score.currentScore = this.score;
     },
     updateSavedTime: function () {
-        LEVELS[this.level].score.currentTimeClear = game.time.elapsedSecondsSince(this.timeStart);
+        LEVELS[this.level].score.currentTimeClear = game.time.totalElapsedSeconds() - this.timeStart;
     },
     updateSavedBestStats: function () {
         if (LEVELS[this.level].score.currentHighestCombo > LEVELS[this.level].score.bestHighestCombo) {
-            LEVELS[this.level].score.bestHighestCombo = LEVELS[this.level].score.currentHighestCombo
+            LEVELS[this.level].score.bestHighestCombo = LEVELS[this.level].score.currentHighestCombo;
         }
 
         if (LEVELS[this.level].score.currentScore > LEVELS[this.level].score.bestScore) {
-            LEVELS[this.level].score.bestScore = LEVELS[this.level].score.currentScore
+            LEVELS[this.level].score.bestScore = LEVELS[this.level].score.currentScore;
         }
 
-        if (LEVELS[this.level].score.currentTimeClear < LEVELS[this.level].score.bestTimeClear && LEVELS[this.level].score.bestTimeClear !== 0) {
-            LEVELS[this.level].score.bestTimeClear = LEVELS[this.level].score.currentTimeClear
+        if (LEVELS[this.level].score.bestTimeClear === 0 || LEVELS[this.level].score.currentTimeClear < LEVELS[this.level].score.bestTimeClear) {
+            LEVELS[this.level].score.bestTimeClear = LEVELS[this.level].score.currentTimeClear;
         }
     }
     // render: function () {
