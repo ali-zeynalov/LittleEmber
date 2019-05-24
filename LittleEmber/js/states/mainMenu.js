@@ -6,209 +6,39 @@
  */
 
 var MainMenu = function (game) {
+    this.BUTTON_MARGIN_X = 10;
+    this.BUTTON_MARGIN_Y = 60;
 
-    // Data that each level requires to run
-    this.LEVELS = [
+    this.MENU_SELECT = [
         {
-            level: 0
-            /***
-             * TODO: Tutorial level data goes here
-             */
+            buttonName: "newGameButtonDown",
+            buttonHoverName: "newGameButton",
+            xPosition: this.BUTTON_MARGIN_X,
+            yPosition: game.world.height / 3,
+            hovered: true
         },
         {
-            level: 1,
-            /***
-             * TODO: Implement use of "finished" for Continue game feature
-             */
-            finished: false,
-            background: "background_01",
-            obstacles: [
-                {
-                    name: "branches",
-                    burnable: true,
-                    burning: false,
-                    hitBoxScaleX: 50,
-                    hitBoxScaleY: 30,
-                    hitBoxOffsetX: 10,
-                    hitBoxOffsetY: 20,
-                    /*** TODO: Use this structure when we have animations for our objects
-                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
-                     */
-                    idleAnimationFrames: ["branches"],
-                    burningAnimationFrames: ["branchesBurning_01", "branchesBurning_02"],
-                    burnedAnimationFrames: ["ashes"],
-                    /*** TODO: Use this structure when we have sound for our objects
-                     defaultSoundName: "defaultSound",
-                     burningSoundName: "burningSound"
-                     */
-                    burnMeterChange: 0.1,
-                    score: 50
-                },
-                {
-                    name: "bush",
-                    burnable: true,
-                    burning: false,
-                    hitBoxScaleX: 70,
-                    hitBoxScaleY: 70,
-                    hitBoxOffsetX: 10,
-                    hitBoxOffsetY: 10,
-                    /*** TODO: Use this structure when we have animations for our objects
-                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
-                     */
-                    idleAnimationFrames: ["bush"],
-                    burningAnimationFrames: ["bushBurning_01", "bushBurning_02"],
-                    burnedAnimationFrames: ["ashes"],
-                    /*** TODO: Use this structure when we have sound for our objects
-                     defaultSoundName: "defaultSound",
-                     burningSoundName: "burningSound"
-                     */
-                    burnMeterChange: -0.2,
-                    score: 100
-                },
-                {
-                    name: "flowers",
-                    burnable: true,
-                    burning: false,
-                    hitBoxScaleX: 50,
-                    hitBoxScaleY: 50,
-                    hitBoxOffsetX: 10,
-                    hitBoxOffsetY: 5,
-                    /*** TODO: Use this structure when we have animations for our objects
-                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
-                     */
-                    idleAnimationFrames: ["flowers"],
-                    burningAnimationFrames: ["flowersBurning_01", "flowersBurning_02"],
-                    burnedAnimationFrames: ["ashes"],
-                    /*** TODO: Use this structure when we have sound for our objects
-                     defaultSoundName: "defaultSound",
-                     burningSoundName: "burningSound"
-                     */
-                    burnMeterChange: 0.1,
-                    score: 25
-                },
-                {
-                    name: "cup",
-                    burnable: true,
-                    burning: false,
-                    hitBoxScaleX: 40,
-                    hitBoxScaleY: 40,
-                    hitBoxOffsetX: 2,
-                    hitBoxOffsetY: 7,
-                    /*** TODO: Use this structure when we have animations for our objects
-                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
-                     */
-                    idleAnimationFrames: ["cup"],
-                    burningAnimationFrames: ["cupBurning_01", "cupBurning_02"],
-                    burnedAnimationFrames: ["ashes"],
-                    /*** TODO: Use this structure when we have sound for our objects
-                     defaultSoundName: "defaultSound",
-                     burningSoundName: "burningSound"
-                     */
-                    burnMeterChange: 0.08,
-                    score: 50
-                },
-                {
-                    name: "wrapper",
-                    burnable: true,
-                    burning: false,
-                    hitBoxScaleX: 40,
-                    hitBoxScaleY: 40,
-                    hitBoxOffsetX: 7,
-                    hitBoxOffsetY: 5,
-                    /*** TODO: Use this structure when we have animations for our objects
-                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
-                     */
-                    idleAnimationFrames: ["wrapper"],
-                    burningAnimationFrames: ["wrapperBurning_01", "wrapperBurning_02"],
-                    burnedAnimationFrames: ["ashes"],
-                    /*** TODO: Use this structure when we have sound for our objects
-                     defaultSoundName: "defaultSound",
-                     burningSoundName: "burningSound"
-                     */
-                    burnMeterChange: 0.08,
-                    score: 75
-                },
-                {
-                    name: "cricket",
-                    burnable: true,
-                    burning: false,
-                    hitBoxScaleX: 50,
-                    hitBoxScaleY: 30,
-                    hitBoxOffsetX: 0,
-                    hitBoxOffsetY: 15,
-                    /*** TODO: Use this structure when we have animations for our objects
-                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
-                     */
-                    idleAnimationFrames: ["cricket"],
-                    burningAnimationFrames: ["cricketBurning_01", "cricketBurning_02"],
-                    burnedAnimationFrames: ["ashes"],
-                    defaultSoundName: "cricketNorm",
-                    burningSoundName: "cricketFire",
-
-                    burnMeterChange: -0.05,
-                    score: 100
-                },
-                {
-                    name: "puddle",
-                    burnable: false,
-                    burning: false,
-                    hitBoxScaleX: 100,
-                    hitBoxScaleY: 60,
-                    hitBoxOffsetX: 10,
-                    hitBoxOffsetY: 10,
-                    /*** TODO: Use this structure when we have animations for our objects
-                     idleAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burningAnimationFrames: ["animation0", "animation1", "animation2"],
-                     burnedAnimationFrames: ["animation0", "animation1", "animation2"],
-                     */
-                    idleAnimationFrames: ["puddle"],
-                    burningAnimationFrames: ["puddle"],
-                    burnedAnimationFrames: ["puddle"],
-                    /*** TODO: Use this structure when we have sound for our objects
-                     defaultSoundName: "defaultSound",
-                     burningSoundName: "burningSound"
-                     */
-                    burnMeterChange: -0.4,
-                    score: -50
-                }
-            ],
-            eventLevel: {
-                name: "waterDropOutline",
-                // Type 1: Expanding, 2: Blinking
-                type: 1,
-                mainAnimation: ["waterDrop_01", "waterDrop_02", "waterDrop_03", "waterDrop_04", "waterDrop_05", "waterDrop_06", "waterDrop_07", "waterDrop_08",
-                    "waterDrop_09", "waterDrop_10"]
-            },
-            score: {
-                goal: 2500,
-
-                currentTimeClear: "",
-                currentHighestCombo: 0,
-                currentScore: 0,
-
-                bestTimeClear: "",
-                bestHighestCombo: 0,
-                bestScore: 0
-            },
-            levelMusic: "lvl1"
+            buttonName: "continueButtonDown",
+            buttonHoverName: "continueButton",
+            buttonGreyedOut: "continueButtonGreyedOut",
+            xPosition: this.BUTTON_MARGIN_X,
+            yPosition: game.world.height / 3 + this.BUTTON_MARGIN_Y,
+            hovered: false,
+            greyedOut: true
         },
         {
-            /***
-             * TODO: More levels
-             */
-            level: 2
+            buttonName: "newGameButtonDown",
+            buttonHoverName: "newGameButton",
+            xPosition: this.BUTTON_MARGIN_X,
+            yPosition: game.world.height / 3 + this.BUTTON_MARGIN_Y * 2,
+            hovered: false
+        },
+        {
+            buttonName: "newGameButtonDown",
+            buttonHoverName: "newGameButton",
+            xPosition: this.BUTTON_MARGIN_X,
+            yPosition: game.world.height / 3 + this.BUTTON_MARGIN_Y * 3,
+            hovered: false
         }
     ];
 };
@@ -221,6 +51,18 @@ MainMenu.prototype = {
         this.menuMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
     },
     create: function () {
+        if (localStorage.getItem("LEVELS") !== null) {
+            LEVELS = JSON.parse(localStorage.getItem("LEVELS"));
+        } else {
+            console.log("No save data, Creating it");
+            localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
+        }
+
+        console.log("Best All Time Combo: " + LEVELS[1].score.bestHighestCombo);
+        console.log("Best All Time Score: " + LEVELS[1].score.bestScore);
+        console.log("Best All Time Clear: " + LEVELS[1].score.bestTimeClear);
+        console.log("===================");
+
         this.menuBackground = game.add.sprite(0, 0, "mainMenuBackground");
 
         // Name of our game
@@ -233,14 +75,152 @@ MainMenu.prototype = {
         titleText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
 
         // Add buttons
-        var startButton = game.add.button(game.world.centerX, game.world.height / 3, "atlas", this.startGame, this, "newGameButton", "newGameButton",
+        var startButton = game.add.button(game.world.centerX + 50, game.world.height / 3, "atlas", this.startNewGame, this, "newGameButton", "newGameButton",
             "newGameButtonDown");
         startButton.anchor.set(0.5);
+
+        this.pointer = 0;
+        this.menuButtons = game.add.group();
+        this.updateMenu(true);
+
     },
-    startGame: function () {
-        // switch to play state
-        this.menuMusic.stop(); // don't play during levels
+    update: function () {
+
+        // Select the menu option
+        if ((game.input.keyboard.justPressed(Phaser.Keyboard.ENTER) || game.input.keyboard.justPressed(Phaser.Keyboard.E))) {
+            console.log(this.pointer);
+            if (this.pointer === 0) {
+                this.startNewGame();
+            }
+        }
+
+        // Checks where user is navigating in the main menu
+        var direction = -1;
+        if ((game.input.keyboard.justPressed(Phaser.Keyboard.W) || game.input.keyboard.justPressed(Phaser.Keyboard.UP))) {
+            direction = 0;
+        } else if ((game.input.keyboard.justPressed(Phaser.Keyboard.S) || game.input.keyboard.justPressed(Phaser.Keyboard.DOWN))) {
+            direction = 1;
+        }
+        // Moves pointer in the main menu
+        if (direction !== -1) {
+            this.movePointer(direction);
+        }
+        // Updates main menu
+        this.updateMenu(false);
+
+
+    },
+    movePointer: function (direction) {
+        /*** Direction Meaning:
+         *   0 - UP
+         *   1 - DOWN
+         */
+        this.MENU_SELECT[this.pointer].hovered = false;
+
+        if (this.pointer === 0) {
+            if (direction === 0) {
+                this.pointer = this.MENU_SELECT.length - 1;
+            } else {
+                this.pointer += 1;
+            }
+
+            this.checkPointer(direction);
+        } else if (this.pointer === this.MENU_SELECT.length - 1) {
+            if (direction === 0) {
+                this.pointer -= 1;
+            } else {
+                this.pointer = 0;
+            }
+
+            this.checkPointer(direction);
+        } else {
+            if (direction === 0) {
+                this.pointer -= 1;
+            } else {
+                this.pointer += 1;
+            }
+
+            this.checkPointer(direction);
+        }
+        this.MENU_SELECT[this.pointer].hovered = true;
+
+    },
+    checkPointer: function (direction) {
+        /*** Direction Meaning:
+         *   0 - UP
+         *   1 - DOWN
+         */
+        while (this.MENU_SELECT[this.pointer].greyedOut !== undefined && this.MENU_SELECT[this.pointer].greyedOut) {
+            if (direction === 0) {
+                this.pointer -= 1;
+                if (this.pointer < 0) {
+                    this.pointer = this.MENU_SELECT.length - 1;
+                }
+            } else {
+                this.pointer += 1;
+                if (this.pointer === this.MENU_SELECT.length) {
+                    this.pointer = 0;
+                }
+            }
+        }
+    },
+    updateMenu: function (isFirstTime) {
+        var i;
+        var menuButton;
+        for (i in this.MENU_SELECT) {
+            if (this.MENU_SELECT[i].greyedOut !== undefined) {
+                if (this.MENU_SELECT[i].greyedOut && !LEVELS[1].finished) {
+                    if (isFirstTime) {
+                        menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonGreyedOut);
+                        menuButton.anchor.set(0, 0.5);
+                        menuButton.alpha = 0.3;
+                        this.menuButtons.add(menuButton);
+                    } else {
+                        menuButton = this.menuButtons.getAt(i);
+                        menuButton.loadTexture("atlas", this.MENU_SELECT[i].buttonGreyedOut);
+                    }
+                    continue;
+                }
+            }
+
+            if (this.MENU_SELECT[i].hovered) {
+                if (isFirstTime) {
+                    menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonHoverName);
+                    menuButton.anchor.set(0, 0.5);
+                    this.menuButtons.add(menuButton);
+
+                } else {
+                    menuButton = this.menuButtons.getAt(i);
+                    menuButton.loadTexture("atlas", this.MENU_SELECT[i].buttonHoverName);
+                }
+            } else {
+                if (isFirstTime) {
+                    menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonName);
+                    menuButton.anchor.set(0, 0.5);
+                    this.menuButtons.add(menuButton);
+                } else {
+                    menuButton = this.menuButtons.getAt(i);
+                    menuButton.loadTexture("atlas", this.MENU_SELECT[i].buttonName);
+                }
+            }
+        }
+    },
+    startNewGame: function () {
+        // Start new game
+        this.resetSavedData();
+        game.sound.stopAll();
         game.state.add("Play", Play);
-        game.state.start("Play", true, false, this.LEVELS, 1);
+        game.state.start("Play", true, false, 1);
+    },
+    resetSavedData: function () {
+        var i;
+        for (i in LEVELS) {
+            LEVELS[i].finished = false;
+            var j;
+            for (j in LEVELS[i].score) {
+                LEVELS[i].score[j] = 0;
+            }
+
+        }
     }
 };

@@ -20,9 +20,9 @@ var Play = function (game) {
 };
 
 Play.prototype = {
-    init: function (LEVELS, level) {
+    init: function (level) {
         // Initialize incoming variables
-        this.LEVELS = LEVELS;
+        // this.LEVELS = LEVELS;
         this.level = level;
     },
     preload: function () {
@@ -36,7 +36,10 @@ Play.prototype = {
 
     },
     create: function () {
-        this.levelMusic = game.add.audio(this.LEVELS[this.level].levelMusic);
+        this.timeStart = game.time.totalElapsedSeconds();
+
+        // Audio
+        this.levelMusic = game.add.audio(LEVELS[this.level].levelMusic);
         this.catchFire = game.add.audio("catchFire");
         this.emberSound = game.add.audio("emberSound");
         this.catchFire.allowMultiple = true;
@@ -48,7 +51,7 @@ Play.prototype = {
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
         // Scrolling background
-        this.grassBg = game.add.tileSprite(0, 0, 600, 800, this.LEVELS[this.level].background);
+        this.grassBg = game.add.tileSprite(0, 0, 600, 800, LEVELS[this.level].background);
 
         // Gales mechanic at the bottom of the screen
         this.playerBoosted = false;
@@ -136,22 +139,21 @@ Play.prototype = {
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
 
         // allow the player to exit game to GameOver state by pressing Q
-        if (game.input.keyboard.isDown(Phaser.Keyboard.Q) || this.player.scale.x <= 0.2) {
-            this.levelMusic.stop();
-            this.emberSound.stop();
+        if (game.input.keyboard.isDown(Phaser.Keyboard.Q) || this.player.scale.x <= 0.2 || this.score >= LEVELS[this.level].scoreGoal) {
+            var msg = "Your flame flickers out...";
 
+            this.updateSavedCombo();
+            this.updateSavedScore();
+            this.updateSavedTime();
+
+            if (this.score >= LEVELS[this.level].scoreGoal) {
+                msg = "You burned everything in your way!";
+                this.updateSavedBestStats();
+            }
+
+            localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
             game.sound.stopAll();
-
-            game.state.start("GameOver", true, false, "Your flame flickers out...");
-        }
-        // Check if the score is met the finish level conditions
-        if (this.score >= this.LEVELS[this.level].score.goal) {
-            this.levelMusic.stop();
-            this.emberSound.stop();
-
-            game.sound.stopAll();
-
-            game.state.start("GameOver", true, false, "You burned everything in your way!");
+            game.state.start("GameOver", true, false, msg);
         }
 
         // add player input checks
@@ -203,13 +205,12 @@ Play.prototype = {
         game.physics.arcade.overlap(this.player, this.obstacles, this.obstacleOverlap, null, this);
         game.physics.arcade.overlap(this.player, this.instructions, this.burnInstructions, null, this);
         game.physics.arcade.overlap(this.player, this.gales, this.boostPlayerUp, null, this);
-        game.physics.arcade.overlap(this.player, this.instructions, this.burnInstructions, null, this);
 
     },
     createObstacle: function () {
         // Creating the obstacle
         do {
-            var obstacleIndex = game.rnd.integerInRange(0, this.LEVELS[this.level].obstacles.length - 1);
+            var obstacleIndex = game.rnd.integerInRange(0, LEVELS[this.level].obstacles.length - 1);
         } while (obstacleIndex === this.previousObstacleIndex);
 
         this.previousObstacleIndex = obstacleIndex;
@@ -221,7 +222,7 @@ Play.prototype = {
         var yVelocity = this.OBSTACLE_VELOCITY;
         var maxVelocity = this.OBSTACLE_MAX_VELOCITY;
 
-        this.obstacle = new Obstacle(game, x, y, direction, this.LEVELS[this.level].obstacles[obstacleIndex], xVelocity, yVelocity, maxVelocity);
+        this.obstacle = new Obstacle(game, x, y, direction, LEVELS[this.level].obstacles[obstacleIndex], xVelocity, yVelocity, maxVelocity);
         // Add the object to the game
         game.add.existing(this.obstacle);
         this.obstacles.add(this.obstacle);
@@ -245,11 +246,13 @@ Play.prototype = {
                 if (this.combo > 1) {
                     this.playerBurnMeter += this.combo / 100;
                 }
+                this.updateSavedCombo();
                 this.combo = 0;
+
                 this.flameSizzle.play('', 0, 0.3, false);
             }
             this.updateScore(obstacle.score);
-            this.updateCombo();
+            this.updateComboText();
             this.updateBurnMeter(obstacle.burnMeterChange);
         }
     },
@@ -291,7 +294,7 @@ Play.prototype = {
         this.playerScaling = game.add.tween(this.player.scale);
         this.playerScaling.to({x: currentSize, y: currentSize}, 500, Phaser.Easing.Circular.Out, true, 0, 0, false);
     },
-    updateCombo: function () {
+    updateComboText: function () {
         if (this.combo > 1) {
             this.comboText.text = "x" + this.combo;
         } else {
@@ -304,11 +307,11 @@ Play.prototype = {
             this.startGame = true;
 
             // Every time spawns obstacles
-            game.time.events.loop(Phaser.Timer.SECOND, this.createObstacle, this);
+            game.time.events.loop(Phaser.Timer.SECOND / 1.5, this.createObstacle, this);
             this.previousObstacleIndex = 0;
 
             // Start the burn meter
-            game.time.events.loop(Phaser.Timer.SECOND / 2, this.playerBurnMeterConstantChange, this);
+            game.time.events.loop(Phaser.Timer.HALF, this.playerBurnMeterConstantChange, this);
 
             // Play event
             game.time.events.loop(Phaser.Timer.SECOND * 2, this.levelEvent, this);
@@ -329,16 +332,17 @@ Play.prototype = {
         // spawn event at a random spot and add properties to it
         var x = game.rnd.integerInRange(20, game.world.width - 20);
         var y = game.rnd.integerInRange(200, game.world.height - 30);
-        this.eventLevel = game.add.sprite(x, y, "atlas", this.LEVELS[this.level].eventLevel.name);
+        this.eventLevel = game.add.sprite(x, y, "atlas", LEVELS[this.level].eventLevel.name);
         this.eventLevel.anchor.set(0.5);
         this.eventLevel.scale.setTo(0.1);
-        this.eventLevel.animations.add("trigger", this.LEVELS[this.level].eventLevel.mainAnimation, 15, false);
+        this.eventLevel.animations.add("trigger", LEVELS[this.level].eventLevel.mainAnimation, 15, false);
+
         game.physics.enable(this.eventLevel, Phaser.Physics.ARCADE);
         this.eventLevel.body.setCircle(100);
 
         this.eventScaling = game.add.tween(this.eventLevel.scale);
         this.eventScaling.to({x: 1, y: 1}, 500, Phaser.Easing.Circular.Out, true, 0, 0, false);
-        // play the animation after 2 seconds of the spawn
+        // play the animation after a second of the spawn
         game.time.events.add(Phaser.Timer.SECOND, this.levelEventAnimation, this, this.eventLevel);
 
     },
@@ -357,13 +361,40 @@ Play.prototype = {
             this.playerBurnMeter += this.combo / 100;
         }
         this.flameSizzle.play('', 0, 0.3, false);
+
+        this.updateSavedCombo();
+
         this.combo = 0;
-        this.updateCombo();
+        this.updateComboText();
         this.updateBurnMeter(-0.5);
     },
     boostPlayerUp: function (player, gales) {
         this.playerBoosted = true;
         player.body.velocity.y = -this.PLAYER_MAX_VELOCITY_Y;
+    },
+    updateSavedCombo: function () {
+        if (LEVELS[this.level].score.currentHighestCombo === 0 || this.combo > LEVELS[this.level].score.currentHighestCombo) {
+            LEVELS[this.level].score.currentHighestCombo = this.combo;
+        }
+    },
+    updateSavedScore: function () {
+        LEVELS[this.level].score.currentScore = this.score;
+    },
+    updateSavedTime: function () {
+        LEVELS[this.level].score.currentTimeClear = game.time.elapsedSecondsSince(this.timeStart);
+    },
+    updateSavedBestStats: function () {
+        if (LEVELS[this.level].score.currentHighestCombo > LEVELS[this.level].score.bestHighestCombo) {
+            LEVELS[this.level].score.bestHighestCombo = LEVELS[this.level].score.currentHighestCombo
+        }
+
+        if (LEVELS[this.level].score.currentScore > LEVELS[this.level].score.bestScore) {
+            LEVELS[this.level].score.bestScore = LEVELS[this.level].score.currentScore
+        }
+
+        if (LEVELS[this.level].score.currentTimeClear < LEVELS[this.level].score.bestTimeClear && LEVELS[this.level].score.bestTimeClear !== 0) {
+            LEVELS[this.level].score.bestTimeClear = LEVELS[this.level].score.currentTimeClear
+        }
     }
     // render: function () {
     //     game.debug.body(this.player);
