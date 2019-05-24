@@ -75,7 +75,6 @@ var MainMenu = function (game) {
             }
         ]
 
-
     };
 };
 
@@ -131,32 +130,53 @@ MainMenu.prototype = {
 
         // Select the menu option
         if ((game.input.keyboard.justPressed(Phaser.Keyboard.ENTER) || game.input.keyboard.justPressed(Phaser.Keyboard.E))) {
-                if (this.pointer === 0) {
+            if (this.pointer === 0) {
                 this.startNewGame();
             }
         }
 
         // Show list of levels to start at
         if (this.pointer === 1 && this.MENU_SELECT[this.pointer].hovered) {
-            this.updateLevelSelect(true);
-            console.log("WE IN");
+            if (this.levelButtons.length === 0) {
+                this.updateLevelSelect(true);
+            }
+            if ((game.input.keyboard.justPressed(Phaser.Keyboard.ENTER) || game.input.keyboard.justPressed(Phaser.Keyboard.E)
+                || game.input.keyboard.justPressed(Phaser.Keyboard.RIGHT) || game.input.keyboard.justPressed(Phaser.Keyboard.D))
+                && !this.LEVEL_SELECT.levelSelect) {
+                this.LEVEL_SELECT.levelSelect = true;
+                this.LEVEL_SELECT.levels[0].hovered = true;
+                // this.pointerSprite.x = this.LEVEL_SELECT.levels[0].xPosition + this.levelButtons.getAt(0).width + 20;
+                // this.pointerSprite.y = this.LEVEL_SELECT.levels[0].yPosition;
+            }
+            if ((game.input.keyboard.justPressed(Phaser.Keyboard.ESC) || game.input.keyboard.justPressed(Phaser.Keyboard.LEFT)
+                || game.input.keyboard.justPressed(Phaser.Keyboard.A)) && this.LEVEL_SELECT.levelSelect) {
+                this.LEVEL_SELECT.levelSelect = false;
+                this.LEVEL_SELECT.levels[this.levelSelectPointer].hovered = false;
+                this.updateLevelSelect(false);
+            }
         } else {
             this.removeLevelSelect();
         }
 
         // Checks where user is navigating in the main menu
         var direction = -1;
-        if ((game.input.keyboard.justPressed(Phaser.Keyboard.W) || game.input.keyboard.justPressed(Phaser.Keyboard.UP))) {
+        if ((game.input.keyboard.justPressed(Phaser.Keyboard.W) || game.input.keyboard.justPressed(Phaser.Keyboard.UP)) && !this.LEVEL_SELECT.levelSelect) {
             direction = 0;
-        } else if ((game.input.keyboard.justPressed(Phaser.Keyboard.S) || game.input.keyboard.justPressed(Phaser.Keyboard.DOWN))) {
+        } else if ((game.input.keyboard.justPressed(Phaser.Keyboard.S) || game.input.keyboard.justPressed(Phaser.Keyboard.DOWN)) && !this.LEVEL_SELECT.levelSelect) {
             direction = 1;
         }
         // Moves pointer in the main menu
         if (direction !== -1) {
             this.movePointer(direction);
         }
+
         // Updates main menu
-        this.updateMenu(false);
+        if (!this.LEVEL_SELECT.levelSelect) {
+            this.updateMenu(false);
+        } else {
+            this.updateLevelSelect(false);
+        }
+
 
 
     },
@@ -264,51 +284,53 @@ MainMenu.prototype = {
         }
     },
     updateLevelSelect: function (firstInitialization) {
-        var i;
         var levelButton;
-
-        for (i in this.LEVEL_SELECT) {
-
-            if (this.LEVEL_SELECT[i].greyedOut !== undefined) {
-                if (LEVELS[i+1].finished) {
-                    this.LEVEL_SELECT[i].greyedOut = false;
+        for (var i = 0; i < this.LEVEL_SELECT.levels.length; i++) {
+            if (this.LEVEL_SELECT.levels[i].greyedOut !== undefined) {
+                if (i + 1 < this.LEVEL_SELECT.levels.length) {
+                    if (LEVELS[i + 1].finished) {
+                        this.LEVEL_SELECT.levels[i].greyedOut = false;
+                        if (i + 1 < this.LEVEL_SELECT.levels.length) {
+                            this.LEVEL_SELECT.levels[i + 1].greyedOut = false;
+                        }
+                    }
                 }
-                if (this.LEVEL_SELECT[i].greyedOut) {
+                if (this.LEVEL_SELECT.levels[i].greyedOut) {
                     if (firstInitialization) {
-                        levelButton = game.add.sprite(this.LEVEL_SELECT[i].xPosition, this.LEVEL_SELECT[i].yPosition, "atlas", this.LEVEL_SELECT[i].buttonGreyedOut);
+                        levelButton = game.add.sprite(this.LEVEL_SELECT.levels[i].xPosition, this.LEVEL_SELECT.levels[i].yPosition, "atlas", this.LEVEL_SELECT.levels[i].buttonGreyedOut);
                         levelButton.anchor.set(0, 0.5);
                         levelButton.alpha = 0.3;
                         this.levelButtons.add(levelButton);
                     } else {
                         levelButton = this.levelButtons.getAt(i);
-                        levelButton.loadTexture("atlas", this.LEVEL_SELECT[i].buttonGreyedOut);
+                        levelButton.loadTexture("atlas", this.LEVEL_SELECT.levels[i].buttonGreyedOut);
                         levelButton.alpha = 0.3;
                     }
                     continue;
                 }
             }
 
-            if (this.LEVEL_SELECT[i].hovered) {
+            if (this.LEVEL_SELECT.levels[i].hovered) {
                 if (firstInitialization) {
-                    levelButton = game.add.sprite(this.LEVEL_SELECT[i].xPosition, this.LEVEL_SELECT[i].yPosition, "atlas", this.LEVEL_SELECT[i].buttonHoverName);
+                    levelButton = game.add.sprite(this.LEVEL_SELECT.levels[i].xPosition, this.LEVEL_SELECT.levels[i].yPosition, "atlas", this.LEVEL_SELECT.levels[i].buttonHoverName);
                     levelButton.anchor.set(0, 0.5);
                     this.levelButtons.add(levelButton);
                 } else {
-                    levelButton = this.menuButtons.getAt(i);
-                    levelButton.loadTexture("atlas", this.MENU_SELECT[i].buttonHoverName);
-                    this.pointerSprite.x = levelButton.width + 20;
-                    this.pointerSprite.y = this.LEVEL_SELECT[i].yPosition;
+                    levelButton = this.levelButtons.getAt(i);
+                    levelButton.loadTexture("atlas", this.LEVEL_SELECT.levels[i].buttonHoverName);
+                    this.pointerSprite.x = this.LEVEL_SELECT.levels[i].xPosition + levelButton.width + 20;
+                    this.pointerSprite.y = this.LEVEL_SELECT.levels[i].yPosition;
                     levelButton.alpha = 1;
 
                 }
             } else {
                 if (firstInitialization) {
-                    levelButton = game.add.sprite(this.LEVEL_SELECT[i].xPosition, this.LEVEL_SELECT[i].yPosition, "atlas", this.LEVEL_SELECT[i].buttonName);
+                    levelButton = game.add.sprite(this.LEVEL_SELECT.levels[i].xPosition, this.LEVEL_SELECT.levels[i].yPosition, "atlas", this.LEVEL_SELECT.levels[i].buttonName);
                     levelButton.anchor.set(0, 0.5);
                     this.levelButtons.add(levelButton);
                 } else {
-                    levelButton = this.menuButtons.getAt(i);
-                    levelButton.loadTexture("atlas", this.LEVEL_SELECT[i].buttonName);
+                    levelButton = this.levelButtons.getAt(i);
+                    levelButton.loadTexture("atlas", this.LEVEL_SELECT.levels[i].buttonName);
                     levelButton.alpha = 1;
                 }
             }
@@ -324,9 +346,7 @@ MainMenu.prototype = {
 
     },
     removeLevelSelect: function () {
-        /***
-         * TODO: Add way to remove level select
-         */
+        this.levelButtons.removeAll();
     },
     startNewGame: function () {
         // Start new game

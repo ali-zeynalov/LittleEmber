@@ -208,7 +208,43 @@ var LEVELS = [
         /***
          * TODO: More levels
          */
-        level: 2
+        level: 2,
+        finished: false,
+        background: "background_01",
+        obstacles: [],
+        eventLevel: {},
+        scoreGoal: 2500,
+        score: {
+            currentTimeClear: 0,
+            currentHighestCombo: 0,
+            currentScore: 0,
+
+            bestTimeClear: 0,
+            bestHighestCombo: 0,
+            bestScore: 0
+        },
+        levelMusic: "lvl2"
+    },
+    {
+        /***
+         * TODO: More levels
+         */
+        level: 3,
+        finished: false,
+        background: "background_01",
+        obstacles: [],
+        eventLevel: {},
+        scoreGoal: 2500,
+        score: {
+            currentTimeClear: 0,
+            currentHighestCombo: 0,
+            currentScore: 0,
+
+            bestTimeClear: 0,
+            bestHighestCombo: 0,
+            bestScore: 0
+        },
+        levelMusic: "lvl3"
     }
 ];
 
