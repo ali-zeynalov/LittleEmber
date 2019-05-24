@@ -41,6 +41,42 @@ var MainMenu = function (game) {
             hovered: false
         }
     ];
+
+    this.LEVEL_SELECT = {
+        isLevelSelectMenuOn: false,
+        levelSelect: false,
+        levels: [
+            {
+                buttonName: "level1ButtonDown",
+                buttonHoverName: "level1Button",
+                xPosition: game.world.centerX,
+                yPosition: this.MENU_SELECT[1].yPosition,
+                hovered: false,
+                greyedOut: false
+
+            },
+            {
+                buttonName: "level2ButtonDown",
+                buttonHoverName: "level2Button",
+                xPosition: game.world.centerX,
+                yPosition: this.MENU_SELECT[1].yPosition + this.BUTTON_MARGIN_Y,
+                hovered: false,
+                greyedOut: true
+
+            },
+            {
+                buttonName: "level3ButtonDown",
+                buttonHoverName: "level3Button",
+                xPosition: game.world.centerX,
+                yPosition: this.MENU_SELECT[1].yPosition + this.BUTTON_MARGIN_Y * 2,
+                hovered: false,
+                greyedOut: false
+
+            }
+        ]
+
+
+    };
 };
 
 MainMenu.prototype = {
@@ -75,23 +111,37 @@ MainMenu.prototype = {
         titleText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
 
         // Add buttons
-        var startButton = game.add.button(game.world.centerX + 50, game.world.height / 3, "atlas", this.startNewGame, this, "newGameButton", "newGameButton",
+        var startButton = game.add.button(game.world.centerX, game.world.height / 5, "atlas", this.startNewGame, this, "newGameButton", "newGameButton",
             "newGameButtonDown");
         startButton.anchor.set(0.5);
 
+        // Pointer to keep track on what menu button we are on
         this.pointer = 0;
         this.menuButtons = game.add.group();
         this.updateMenu(true);
+        // Point sprite to make it look nice
+        this.pointerSprite = game.add.sprite(this.menuButtons.getAt(0).width + 20, this.MENU_SELECT[0].yPosition, "atlas", "littleEmber");
+        this.pointerSprite.anchor.set(0.5);
+        this.pointerSprite.scale.setTo(0.2);
 
+        this.levelSelectPointer = 0;
+        this.levelButtons = game.add.group();
     },
     update: function () {
 
         // Select the menu option
         if ((game.input.keyboard.justPressed(Phaser.Keyboard.ENTER) || game.input.keyboard.justPressed(Phaser.Keyboard.E))) {
-            console.log(this.pointer);
-            if (this.pointer === 0) {
+                if (this.pointer === 0) {
                 this.startNewGame();
             }
+        }
+
+        // Show list of levels to start at
+        if (this.pointer === 1 && this.MENU_SELECT[this.pointer].hovered) {
+            this.updateLevelSelect(true);
+            console.log("WE IN");
+        } else {
+            this.removeLevelSelect();
         }
 
         // Checks where user is navigating in the main menu
@@ -169,7 +219,10 @@ MainMenu.prototype = {
         var menuButton;
         for (i in this.MENU_SELECT) {
             if (this.MENU_SELECT[i].greyedOut !== undefined) {
-                if (this.MENU_SELECT[i].greyedOut && !LEVELS[1].finished) {
+                if (LEVELS[1].finished) {
+                    this.MENU_SELECT[i].greyedOut = false;
+                }
+                if (this.MENU_SELECT[i].greyedOut) {
                     if (isFirstTime) {
                         menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonGreyedOut);
                         menuButton.anchor.set(0, 0.5);
@@ -178,6 +231,7 @@ MainMenu.prototype = {
                     } else {
                         menuButton = this.menuButtons.getAt(i);
                         menuButton.loadTexture("atlas", this.MENU_SELECT[i].buttonGreyedOut);
+                        menuButton.alpha = 0.3;
                     }
                     continue;
                 }
@@ -188,10 +242,13 @@ MainMenu.prototype = {
                     menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonHoverName);
                     menuButton.anchor.set(0, 0.5);
                     this.menuButtons.add(menuButton);
-
                 } else {
                     menuButton = this.menuButtons.getAt(i);
                     menuButton.loadTexture("atlas", this.MENU_SELECT[i].buttonHoverName);
+                    this.pointerSprite.x = menuButton.width + 20;
+                    this.pointerSprite.y = this.MENU_SELECT[i].yPosition;
+                    menuButton.alpha = 1;
+
                 }
             } else {
                 if (isFirstTime) {
@@ -201,9 +258,75 @@ MainMenu.prototype = {
                 } else {
                     menuButton = this.menuButtons.getAt(i);
                     menuButton.loadTexture("atlas", this.MENU_SELECT[i].buttonName);
+                    menuButton.alpha = 1;
                 }
             }
         }
+    },
+    updateLevelSelect: function (firstInitialization) {
+        var i;
+        var levelButton;
+
+        for (i in this.LEVEL_SELECT) {
+
+            if (this.LEVEL_SELECT[i].greyedOut !== undefined) {
+                if (LEVELS[i+1].finished) {
+                    this.LEVEL_SELECT[i].greyedOut = false;
+                }
+                if (this.LEVEL_SELECT[i].greyedOut) {
+                    if (firstInitialization) {
+                        levelButton = game.add.sprite(this.LEVEL_SELECT[i].xPosition, this.LEVEL_SELECT[i].yPosition, "atlas", this.LEVEL_SELECT[i].buttonGreyedOut);
+                        levelButton.anchor.set(0, 0.5);
+                        levelButton.alpha = 0.3;
+                        this.levelButtons.add(levelButton);
+                    } else {
+                        levelButton = this.levelButtons.getAt(i);
+                        levelButton.loadTexture("atlas", this.LEVEL_SELECT[i].buttonGreyedOut);
+                        levelButton.alpha = 0.3;
+                    }
+                    continue;
+                }
+            }
+
+            if (this.LEVEL_SELECT[i].hovered) {
+                if (firstInitialization) {
+                    levelButton = game.add.sprite(this.LEVEL_SELECT[i].xPosition, this.LEVEL_SELECT[i].yPosition, "atlas", this.LEVEL_SELECT[i].buttonHoverName);
+                    levelButton.anchor.set(0, 0.5);
+                    this.levelButtons.add(levelButton);
+                } else {
+                    levelButton = this.menuButtons.getAt(i);
+                    levelButton.loadTexture("atlas", this.MENU_SELECT[i].buttonHoverName);
+                    this.pointerSprite.x = levelButton.width + 20;
+                    this.pointerSprite.y = this.LEVEL_SELECT[i].yPosition;
+                    levelButton.alpha = 1;
+
+                }
+            } else {
+                if (firstInitialization) {
+                    levelButton = game.add.sprite(this.LEVEL_SELECT[i].xPosition, this.LEVEL_SELECT[i].yPosition, "atlas", this.LEVEL_SELECT[i].buttonName);
+                    levelButton.anchor.set(0, 0.5);
+                    this.levelButtons.add(levelButton);
+                } else {
+                    levelButton = this.menuButtons.getAt(i);
+                    levelButton.loadTexture("atlas", this.LEVEL_SELECT[i].buttonName);
+                    levelButton.alpha = 1;
+                }
+            }
+
+        }
+
+        if (firstInitialization) {
+
+        }
+        /***
+         * TODO: Add list of level select
+         */
+
+    },
+    removeLevelSelect: function () {
+        /***
+         * TODO: Add way to remove level select
+         */
     },
     startNewGame: function () {
         // Start new game

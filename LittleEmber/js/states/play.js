@@ -149,6 +149,7 @@ Play.prototype = {
             if (this.score >= LEVELS[this.level].scoreGoal) {
                 msg = "You burned everything in your way!";
                 this.updateSavedBestStats();
+                LEVELS[this.level].finished = true;
             }
 
             localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
