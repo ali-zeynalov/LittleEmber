@@ -15,7 +15,9 @@ var Play = function (game) {
     this.PLAYER_MAX_VELOCITY_X = 300;
     this.PLAYER_MAX_VELOCITY_Y = 360;
     this.PLAYER_STATINARY_VELOCITY_Y = 100;
-
+    this.BURN_BAR_MAX = -0.02;
+    this.BURN_BAR_MIN = 0.97;
+    this.BURN_BAR_INCREMENT_CHANGE = -0.03;
     this.BURN_METER_CONSTANT_CHANGE = -0.01;
 };
 
@@ -120,6 +122,15 @@ Play.prototype = {
         this.player.body.maxVelocity.y = this.PLAYER_MAX_VELOCITY_Y;
         this.player.body.collideWorldBounds = true;
 
+        // Burn bar
+        this.burnBar = game.add.sprite(game.world.width - 220, 0, "atlasBurnBar", "burnBar_01"); // (x, y, atlas, nameOnAtlas)
+        this.burnBar.animations.add("burning", ["burnBar_01", "burnBar_02", "burnBar_03", "burnBar_04", "burnBar_05", "burnBar_06", "burnBar_05", "burnBar_04", "burnBar_03", "burnBar_02"], 15, true);
+        this.burnBar.animations.play("burning", true);
+        this.burnBarBackground = game.add.sprite(game.world.width - 220, 0, "atlasBurnBar", "burnBarBackground");
+        this.burnBarBackground.scale.x = this.BURN_BAR_MIN;
+        this.burnBarCutout = game.add.sprite(game.world.width - 220, 0, "atlasBurnBar", "burnBarCutout");
+
+
         this.startGame = false;
     },
     update: function () {
@@ -138,14 +149,14 @@ Play.prototype = {
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
 
         // allow the player to exit game to GameOver state by pressing Q
-        if (game.input.keyboard.isDown(Phaser.Keyboard.Q) || this.player.scale.x <= 0.2 || this.score >= LEVELS[this.level].scoreGoal) {
+        if (game.input.keyboard.isDown(Phaser.Keyboard.Q) || this.player.scale.x <= 0.2 || this.burnBarBackground.scale.x <= this.BURN_BAR_MAX) {
             var msg = "Your flame flickers out...";
 
             this.updateSavedCombo();
             this.updateSavedScore();
             this.updateSavedTime();
 
-            if (this.score >= LEVELS[this.level].scoreGoal) {
+            if (this.burnBarBackground.scale.x <= this.BURN_BAR_MAX) {
                 msg = "You burned everything in your way!";
                 this.updateSavedBestStats();
                 LEVELS[this.level].finished = true;
@@ -235,6 +246,8 @@ Play.prototype = {
                 this.combo += 1;
                 this.catchFire.play('', 0, 0.3, false);
                 obstacle.animations.play("burning", true);
+                // add progress to level completion bar
+                this.incrementBurnBar();
                 game.time.events.add(Phaser.Timer.SECOND, this.switchToAshe, this, obstacle);
                 if (obstacle.defaultSoundName !== undefined){
                     obstacle.defaultSoundName.stop();
@@ -396,6 +409,9 @@ Play.prototype = {
         if (LEVELS[this.level].score.bestTimeClear === 0 || LEVELS[this.level].score.currentTimeClear < LEVELS[this.level].score.bestTimeClear) {
             LEVELS[this.level].score.bestTimeClear = LEVELS[this.level].score.currentTimeClear;
         }
+    },
+    incrementBurnBar: function () {
+        this.burnBarBackground.scale.x += this.BURN_BAR_INCREMENT_CHANGE;
     }
     // render: function () {
     //     game.debug.body(this.player);

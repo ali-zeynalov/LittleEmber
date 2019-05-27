@@ -254,6 +254,7 @@ function preload() {
     game.load.image("background_01", "assets/img/individualSprites/background_01.png");
 
     game.load.atlas("atlas", "assets/img/spritesheet.png", "assets/img/sprites.json");
+    game.load.atlas("atlasBurnBar", "assets/img/atlasBurnBar.png", "assets/img/atlasBurnBar.json");
 
     game.load.script("mainMenu", "js/states/mainMenu.js");
     game.load.audio("menuMusic", ["assets/audio/menuMusic.mp3"]);
