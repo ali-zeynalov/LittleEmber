@@ -493,6 +493,9 @@ Play.prototype = {
             this.newHighScore = true;
             LEVELS[this.level].score.bestGrade = finalPercent;
         }
+    },
+    incrementBurnBar: function () {
+        this.burnBarBackground.scale.x += this.BURN_BAR_INCREMENT_CHANGE;
     }
     // render: function () {
     //     game.debug.body(this.player);
