@@ -15,7 +15,9 @@ var Play = function (game) {
     this.PLAYER_MAX_VELOCITY_X = 300;
     this.PLAYER_MAX_VELOCITY_Y = 360;
     this.PLAYER_STATINARY_VELOCITY_Y = 100;
-
+    this.BURN_BAR_MAX = 0.9;
+    this.BURN_BAR_MIN = 0.03;
+    this.BURN_BAR_INCREMENT_CHANGE = -0.03;
     this.BURN_METER_CONSTANT_CHANGE = -0.01;
 };
 
@@ -44,9 +46,10 @@ Play.prototype = {
         // Audio
         this.levelMusic = game.add.audio(LEVELS[this.level].levelMusic);
         this.catchFire = game.add.audio("catchFire");
-        this.emberSound = game.add.audio("emberSound");
+        this.flameSoundLvl1 = game.add.audio("flameSoundLvl1");
+        this.catchFire.allowMultiple = true;
         this.levelMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
-        this.emberSound.play('', 0, 0.6, true);
+        this.flameSoundLvl1.play('', 0, 0.4, true); // 0.4 volume due to initial scale of player
         this.flameSizzle = game.add.audio("flameSizzle");
 
         // Arcade physics
@@ -127,6 +130,16 @@ Play.prototype = {
         this.player.body.maxVelocity.y = this.PLAYER_MAX_VELOCITY_Y;
         this.player.body.collideWorldBounds = true;
 
+        // Burn bar
+        this.burnBar = game.add.sprite(game.world.width - 220, 0, "atlasBurnBar", "burnBar_01"); // (x, y, atlas, nameOnAtlas)
+        this.burnBar.animations.add("burning", ["burnBar_01", "burnBar_02", "burnBar_03", "burnBar_04", "burnBar_05", "burnBar_06", "burnBar_05", "burnBar_04", "burnBar_03", "burnBar_02"], 15, true);
+        this.burnBar.animations.play("burning", true);
+        this.burnBarBackground = game.add.sprite(game.world.width-30, 0, "atlasBurnBar", "burnBarBackground");
+        this.burnBarBackground.anchor.x = 1;
+        this.burnBarBackground.scale.x = this.BURN_BAR_MAX;
+        this.burnBarCutout = game.add.sprite(game.world.width - 220, 0, "atlasBurnBar", "burnBarCutout");
+
+
         this.startGame = false;
         this.isGameOver = false;
     },
@@ -146,14 +159,14 @@ Play.prototype = {
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
 
         // allow the player to exit game to GameOver state by pressing Q
-        if (game.input.keyboard.isDown(Phaser.Keyboard.Q) || this.player.scale.x <= 0.2 || this.score >= LEVELS[this.level].scoreGoal) {
+        if (game.input.keyboard.isDown(Phaser.Keyboard.Q) || this.player.scale.x <= 0.2 || this.burnBarBackground.scale.x <= this.BURN_BAR_MIN) {
             var levelComplete = false;
 
             this.updateSavedCombo();
             this.updateSavedScore();
             this.updateSavedTime();
 
-            if (this.score >= LEVELS[this.level].scoreGoal) {
+            if (this.burnBarBackground.scale.x <= this.BURN_BAR_MIN) {
                 this.updateSavedBestStats();
                 this.calculateGrade();
                 LEVELS[this.level].finished = true;
@@ -253,6 +266,8 @@ Play.prototype = {
                 this.combo += 1;
                 this.catchFire.play('', 0, 0.3, false);
                 obstacle.animations.play("burning", true);
+                // add progress to level completion bar
+                this.incrementBurnBar();
                 game.time.events.add(Phaser.Timer.SECOND, this.switchToAshe, this, obstacle);
                 if (obstacle.defaultSoundName !== undefined) {
                     obstacle.defaultSoundName.stop();
@@ -307,10 +322,24 @@ Play.prototype = {
         if (this.playerBurnMeter < 0.1) {
             this.playerBurnMeter = 0.1;
         }
-        var currentSize = this.playerBurnMeter + (this.combo > 1 ? this.combo / 100 : 0);
+        let currentSize = this.playerBurnMeter + (this.combo > 1 ? this.combo / 100 : 0);
 
         if (currentSize > 2) {
             currentSize = 2;
+        }
+
+        // see if player volume needs to change (based on player size)
+        if(currentSize <= 0.6) { // player is smol (0.6 is arbitrary, but no use making a const for this imo
+            this.flameSoundLvl1.volume = 0.4;
+            // console.log("player smol volume engaged");
+        }
+        else if(currentSize > 0.6 && currentSize <= 1.5) { // player is avg size
+            this.flameSoundLvl1.volume = 0.6;
+            // console.log("player avg volume engaged");
+        }
+        else { // player is a h*ckin' ch0nker
+            this.flameSoundLvl1.volume = 1;
+            // console.log("player ch0nker volume engaged");
         }
 
         this.playerScaling = game.add.tween(this.player.scale);
@@ -456,7 +485,7 @@ Play.prototype = {
             hits = 60;
         } else {
             hits = 50;
-        }   
+        }
 
         var finalPercent = 25 + 0.25 * time + 0.25 * combo + 0.25 * hits;
         LEVELS[this.level].score.currentGrade = finalPercent;
@@ -464,6 +493,9 @@ Play.prototype = {
             this.newHighScore = true;
             LEVELS[this.level].score.bestGrade = finalPercent;
         }
+    },
+    incrementBurnBar: function () {
+        this.burnBarBackground.scale.x += this.BURN_BAR_INCREMENT_CHANGE;
     }
     // render: function () {
     //     game.debug.body(this.player);
