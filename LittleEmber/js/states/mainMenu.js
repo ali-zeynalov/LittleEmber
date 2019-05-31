@@ -21,6 +21,7 @@ MainMenu.prototype = {
             {
                 buttonName: "newGameButtonDown",
                 buttonHoverName: "newGameButton",
+                buttonHoverAnimation: ["newGameButton_01", "newGameButton_02"],
                 xPosition: this.BUTTON_MARGIN_X,
                 yPosition: game.world.height / 3,
                 hovered: true
@@ -29,6 +30,7 @@ MainMenu.prototype = {
                 buttonName: "continueButtonDown",
                 buttonHoverName: "continueButton",
                 buttonGreyedOut: "continueButtonGreyedOut",
+                buttonHoverAnimation: ["continueButton_01", "continueButton_02"],
                 xPosition: this.BUTTON_MARGIN_X,
                 yPosition: game.world.height / 3 + this.BUTTON_MARGIN_Y,
                 hovered: false,
@@ -40,6 +42,7 @@ MainMenu.prototype = {
                  */
                 buttonName: "newGameButtonDown",
                 buttonHoverName: "newGameButton",
+                buttonHoverAnimation: ["newGameButton_01", "newGameButton_02"],
                 xPosition: this.BUTTON_MARGIN_X,
                 yPosition: game.world.height / 3 + this.BUTTON_MARGIN_Y * 2,
                 hovered: false
@@ -47,6 +50,7 @@ MainMenu.prototype = {
             {
                 buttonName: "newGameButtonDown",
                 buttonHoverName: "newGameButton",
+                buttonHoverAnimation: ["newGameButton_01", "newGameButton_02"],
                 xPosition: this.BUTTON_MARGIN_X,
                 yPosition: game.world.height / 3 + this.BUTTON_MARGIN_Y * 3,
                 hovered: false
@@ -60,6 +64,7 @@ MainMenu.prototype = {
                 {
                     buttonName: "level1ButtonDown",
                     buttonHoverName: "level1Button",
+                    buttonHoverAnimation: ["level1Button_01", "level1Button_02"],
                     xPosition: game.world.centerX,
                     yPosition: this.MENU_SELECT[1].yPosition,
                     hovered: false,
@@ -69,6 +74,7 @@ MainMenu.prototype = {
                 {
                     buttonName: "level2ButtonDown",
                     buttonHoverName: "level2Button",
+                    buttonHoverAnimation: ["level2Button_01", "level2Button_02"],
                     xPosition: game.world.centerX,
                     yPosition: this.MENU_SELECT[1].yPosition + this.BUTTON_MARGIN_Y,
                     hovered: false,
@@ -79,6 +85,7 @@ MainMenu.prototype = {
                     buttonName: "level3ButtonDown",
                     buttonHoverName: "level3Button",
                     buttonGreyedOut: "level3ButtonGreyedOut",
+                    buttonHoverAnimation: ["level3Button_01", "level3Button_02"],
                     xPosition: game.world.centerX,
                     yPosition: this.MENU_SELECT[1].yPosition + this.BUTTON_MARGIN_Y * 2,
                     hovered: false,
@@ -86,25 +93,28 @@ MainMenu.prototype = {
 
                 }
             ]
-
         };
 
         // Background music
         this.menuMusic = game.add.audio("menuMusic");
         this.menuMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
 
-        if (localStorage.getItem("LEVELS") !== null) {
-            LEVELS = JSON.parse(localStorage.getItem("LEVELS"));
-        } else {
-            console.log("No save data, Creating it");
-            localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
+        if (window.localStorage) {
+            if (localStorage.getItem("LEVELS") !== null) {
+                var levels = JSON.parse(localStorage.getItem("LEVELS"));
+                if (levels[0].version === LEVELS[0].version){
+                    LEVELS = levels;
+                    console.log("Version is up to date :)");
+                } else {
+                    console.log("Old version, Updating...");
+                    localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
+                }
+
+            } else {
+                console.log("No save data, Creating it...");
+                localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
+            }
         }
-
-        // console.log("Best All Time Combo: " + LEVELS[1].score.bestHighestCombo);
-        // console.log("Best All Time Score: " + LEVELS[1].score.bestScore);
-        // console.log("Best All Time Clear: " + LEVELS[1].score.bestTimeClear);
-        // console.log("===================");
-
         this.menuBackground = game.add.sprite(0, 0, "mainMenuBackground");
 
         // Name of our game
@@ -120,6 +130,7 @@ MainMenu.prototype = {
         this.pointer = 0;
         this.menuButtons = game.add.group();
         this.updateMenu(true);
+        this.isMenuChanging = false;
         // Point sprite to make it look nice
         this.pointerSprite = game.add.sprite(this.menuButtons.getAt(0).width + 20, this.MENU_SELECT[0].yPosition, "atlas", "littleEmber");
         this.pointerSprite.anchor.set(0.5);
@@ -141,7 +152,7 @@ MainMenu.prototype = {
         this.bestLevelStatsTitle.anchor.set(0.5);
         this.bestLevelStatsTitle.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
 
-        var textStyle = {
+        textStyle = {
             font: "Comic Sans MS",
             fontSize: "28px",
             fill: "#fa8b1d",
@@ -153,11 +164,11 @@ MainMenu.prototype = {
         this.bestAllTimeStats.anchor.set(0, 0.5);
         this.bestAllTimeStats.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
 
-        var textStyle = {
+        textStyle = {
             font: "Comic Sans MS",
             fontSize: "28px",
             fill: "#fa8b1d",
-            align: "right",
+            align: "center",
             lineSpacing: "1px"
         };
 
@@ -193,16 +204,19 @@ MainMenu.prototype = {
             if ((game.input.keyboard.justPressed(Phaser.Keyboard.ENTER) || game.input.keyboard.justPressed(Phaser.Keyboard.E)
                 || game.input.keyboard.justPressed(Phaser.Keyboard.RIGHT) || game.input.keyboard.justPressed(Phaser.Keyboard.D))
                 && !this.LEVEL_SELECT.levelSelect) {
+                this.isMenuChanging = true;
                 this.LEVEL_SELECT.levelSelect = true;
                 this.LEVEL_SELECT.levels[0].hovered = true;
             }
             // If player wants to get out then switch back from level select mode
             if ((game.input.keyboard.justPressed(Phaser.Keyboard.ESC) || game.input.keyboard.justPressed(Phaser.Keyboard.LEFT)
                 || game.input.keyboard.justPressed(Phaser.Keyboard.A)) && this.LEVEL_SELECT.levelSelect) {
+                this.isMenuChanging = true;
                 this.LEVEL_SELECT.levelSelect = false;
                 this.LEVEL_SELECT.levels[this.levelSelectPointer].hovered = false;
                 this.levelSelectPointer = 0;
                 this.updateLevelSelect(false);
+                this.isMenuChanging = true;
             }
         } else {
             // If not hovering over continue then remove the level select
@@ -212,8 +226,10 @@ MainMenu.prototype = {
         // Checks where user is navigating in the main menu
         var direction = -1;
         if ((game.input.keyboard.justPressed(Phaser.Keyboard.W) || game.input.keyboard.justPressed(Phaser.Keyboard.UP))) {
+            this.isMenuChanging = true;
             direction = 0;
         } else if ((game.input.keyboard.justPressed(Phaser.Keyboard.S) || game.input.keyboard.justPressed(Phaser.Keyboard.DOWN))) {
+            this.isMenuChanging = true;
             direction = 1;
         }
         // Moves pointer in the main menu
@@ -223,13 +239,17 @@ MainMenu.prototype = {
 
         // Updates main menu
         if (!this.LEVEL_SELECT.levelSelect) {
-            this.updateMenu(false);
-            this.bestLevelStatsTitle.text = "";
-            this.bestAllTimeStats.text = "";
-            this.bestRun.text = "";
+            if (this.isMenuChanging) {
+                this.updateMenu(false);
+                this.bestLevelStatsTitle.text = "";
+                this.bestAllTimeStats.text = "";
+                this.bestRun.text = "";
+            }
         } else {
-            this.updateLevelSelect(false);
-            this.showBestStats();
+            if (this.isMenuChanging) {
+                this.updateLevelSelect(false);
+                this.showBestStats();
+            }
         }
 
     },
@@ -240,6 +260,7 @@ MainMenu.prototype = {
          */
         if (!this.LEVEL_SELECT.levelSelect) {
             this.MENU_SELECT[this.pointer].hovered = false;
+
 
             if (this.pointer === 0) {
                 if (direction === 0) {
@@ -348,6 +369,8 @@ MainMenu.prototype = {
                         menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonGreyedOut);
                         menuButton.anchor.set(0, 0.5);
                         menuButton.alpha = 0.3;
+                        menuButton.animations.add("selected", this.MENU_SELECT[i].buttonHoverAnimation, 15, true);
+                        menuButton.animations.add("idle", [this.MENU_SELECT[i].buttonName], 15, false);
                         this.menuButtons.add(menuButton);
                     } else {
                         menuButton = this.menuButtons.getAt(i);
@@ -362,6 +385,8 @@ MainMenu.prototype = {
                 if (isFirstTime) {
                     menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonHoverName);
                     menuButton.anchor.set(0, 0.5);
+                    menuButton.animations.add("selected", this.MENU_SELECT[i].buttonHoverAnimation, 15, true);
+                    menuButton.animations.add("idle", [this.MENU_SELECT[i].buttonName], 15, false);
                     this.menuButtons.add(menuButton);
                 } else {
                     menuButton = this.menuButtons.getAt(i);
@@ -371,18 +396,28 @@ MainMenu.prototype = {
                     menuButton.alpha = 1;
 
                 }
+                if (menuButton.animations.currentAnim.name !== "selected" || this.isMenuChanging) {
+                    menuButton.animations.play("selected");
+                }
             } else {
                 if (isFirstTime) {
                     menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonName);
                     menuButton.anchor.set(0, 0.5);
+                    menuButton.animations.add("selected", this.MENU_SELECT[i].buttonHoverAnimation, 15, true);
+                    menuButton.animations.add("idle", [this.MENU_SELECT[i].buttonName], 15, false);
                     this.menuButtons.add(menuButton);
                 } else {
                     menuButton = this.menuButtons.getAt(i);
+                    if (menuButton.animations.currentAnim.name === "selected") {
+                        menuButton.animations.stop(null, true);
+                        menuButton.animations.play("idle");
+                    }
                     menuButton.loadTexture("atlas", this.MENU_SELECT[i].buttonName);
                     menuButton.alpha = 1;
                 }
             }
         }
+        this.isMenuChanging = false;
     },
     updateLevelSelect: function (firstInitialization) {
         // Going through each level select option array variable and checking parameters
@@ -402,6 +437,8 @@ MainMenu.prototype = {
                         levelButton = game.add.sprite(this.LEVEL_SELECT.levels[i].xPosition, this.LEVEL_SELECT.levels[i].yPosition, "atlas", this.LEVEL_SELECT.levels[i].buttonGreyedOut);
                         levelButton.anchor.set(0, 0.5);
                         levelButton.alpha = 0.5;
+                        levelButton.animations.add("selected", this.LEVEL_SELECT.levels[i].buttonHoverAnimation, 15, true);
+                        levelButton.animations.add("idle", [this.LEVEL_SELECT.levels[i].buttonName], 15, false);
                         this.levelButtons.add(levelButton);
                     } else {
                         levelButton = this.levelButtons.getAt(i);
@@ -416,6 +453,8 @@ MainMenu.prototype = {
                 if (firstInitialization) {
                     levelButton = game.add.sprite(this.LEVEL_SELECT.levels[i].xPosition, this.LEVEL_SELECT.levels[i].yPosition, "atlas", this.LEVEL_SELECT.levels[i].buttonHoverName);
                     levelButton.anchor.set(0, 0.5);
+                    levelButton.animations.add("selected", this.LEVEL_SELECT.levels[i].buttonHoverAnimation, 15, true);
+                    levelButton.animations.add("idle", [this.LEVEL_SELECT.levels[i].buttonName], 15, false);
                     this.levelButtons.add(levelButton);
                 } else {
                     levelButton = this.levelButtons.getAt(i);
@@ -425,19 +464,29 @@ MainMenu.prototype = {
                     levelButton.alpha = 1;
 
                 }
+                if (levelButton.animations.currentAnim.name !== "selected" || this.isMenuChanging) {
+                    levelButton.animations.play("selected");
+                }
             } else {
                 if (firstInitialization) {
                     levelButton = game.add.sprite(this.LEVEL_SELECT.levels[i].xPosition, this.LEVEL_SELECT.levels[i].yPosition, "atlas", this.LEVEL_SELECT.levels[i].buttonName);
                     levelButton.anchor.set(0, 0.5);
+                    levelButton.animations.add("selected", this.LEVEL_SELECT.levels[i].buttonHoverAnimation, 15, true);
+                    levelButton.animations.add("idle", [this.LEVEL_SELECT.levels[i].buttonName], 15, false);
                     this.levelButtons.add(levelButton);
                 } else {
                     levelButton = this.levelButtons.getAt(i);
+                    if (levelButton.animations.currentAnim.name === "selected") {
+                        levelButton.animations.stop(null, true);
+                        levelButton.animations.play("idle");
+                    }
                     levelButton.loadTexture("atlas", this.LEVEL_SELECT.levels[i].buttonName);
                     levelButton.alpha = 1;
                 }
             }
 
         }
+        this.isMenuChanging = false;
     },
     removeLevelSelect: function () {
         this.levelButtons.removeAll();
@@ -483,7 +532,41 @@ MainMenu.prototype = {
         var bestAllTimeStats = bestTime + bestCombo + bestScore;
         this.bestAllTimeStats.text = bestAllTimeStats;
 
-        this.bestRun.text = "TODO: Best Run\nStats go here";
-
+        this.calculateBestGrade()
+    },
+    calculateBestGrade: function () {
+        var percent = LEVELS[this.levelSelectPointer + 1].score.bestGrade;
+        console.log(this.levelSelectPointer + 1);
+        console.log(percent);
+        this.bestRun.text = "Best Run:\n";
+        if (percent >= 99) {
+            this.bestRun.text += "S";
+        } else if (percent >= 97) {
+            this.bestRun.text += "A+"
+        } else if (percent >= 93) {
+            this.bestRun.text += "A";
+        } else if (percent >= 90) {
+            this.bestRun.text += "A-";
+        } else if (percent >= 87) {
+            this.bestRun.text += "B+";
+        } else if (percent >= 83) {
+            this.bestRun.text += "B";
+        } else if (percent >= 80) {
+            this.bestRun.text += "B-";
+        } else if (percent >= 77) {
+            this.bestRun.text += "C+";
+        } else if (percent >= 73) {
+            this.bestRun.text += "C";
+        } else if (percent >= 70) {
+            this.bestRun.text += "C-";
+        } else if (percent >= 67) {
+            this.bestRun.text += "D+";
+        } else if (percent >= 63) {
+            this.bestRun.text += "D";
+        } else if (percent === 0) {
+            this.bestRun.text += "NONE";
+        } else {
+            this.bestRun.text += "D-";
+        }
     }
 };

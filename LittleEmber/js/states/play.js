@@ -40,6 +40,9 @@ Play.prototype = {
     create: function () {
         this.timeStart = game.time.totalElapsedSeconds();
 
+        this.numberOfBadsHit = 0;
+        this.newHighScore = false;
+
         // Audio
         this.levelMusic = game.add.audio(LEVELS[this.level].levelMusic);
         this.catchFire = game.add.audio("catchFire");
@@ -90,6 +93,7 @@ Play.prototype = {
 
         // Group that holds all of the obstacles
         this.obstacles = game.add.group();
+        this.levelEvents = game.add.group();
 
         // group for showing instructions to the player
         this.instructions = game.add.group();
@@ -112,7 +116,11 @@ Play.prototype = {
 
         this.playerBurnMeter = 0.5;
         // make player character
-        this.player = game.add.sprite(game.world.width / 2, game.world.height - 50, "atlas", "littleEmber"); // for atlas: (x, y, nameOfAtlas, assetNameInAtlas)
+        this.player = game.add.sprite(game.world.width / 2, game.world.height - 50, "atlas", "littleEmber");
+        // TODO: Change the size of the player
+        // this.player.animations.add("burning", ["littleEmber_01", "littleEmber_02", "littleEmber_03", "littleEmber_04", "littleEmber_06", "littleEmber_07",
+        //     "littleEmber_08", "littleEmber_09", "littleEmber_10", "littleEmber_11"], 25, true);
+        // this.player.animations.play("burning");
         this.player.scale.setTo(this.playerBurnMeter);
         this.player.anchor.set(0.5); // center the mass of player character
         // player physics
@@ -133,6 +141,7 @@ Play.prototype = {
 
 
         this.startGame = false;
+        this.isGameOver = false;
     },
     update: function () {
         // Check if player is ready
@@ -151,94 +160,104 @@ Play.prototype = {
 
         // allow the player to exit game to GameOver state by pressing Q
         if (game.input.keyboard.isDown(Phaser.Keyboard.Q) || this.player.scale.x <= 0.2 || this.burnBarBackground.scale.x <= this.BURN_BAR_MIN) {
-            var msg = "Your flame flickers out...";
+            var levelComplete = false;
 
             this.updateSavedCombo();
             this.updateSavedScore();
             this.updateSavedTime();
 
             if (this.burnBarBackground.scale.x <= this.BURN_BAR_MIN) {
-                msg = "You burned everything in your way!";
                 this.updateSavedBestStats();
+                this.calculateGrade();
                 LEVELS[this.level].finished = true;
+                levelComplete = true;
             }
 
-            localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
+            if (window.localStorage) {
+                localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
+            }
             game.sound.stopAll();
+            this.removeObjects();
+
+            this.isGameOver = true;
             game.state.add("GameOver", GameOver);
-            game.state.start("GameOver", true, false, msg);
+            game.state.start("GameOver", false, false, this.level, levelComplete, this.newHighScore);
         }
 
         // add player input checks
         // since they're not in else ifs, we should be able to get combinatorial movement
         // these combo movements are not as fast as they should technically be, so might add
         // euclidian combinatorial directionns instead
-        if ((game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.UP)) &&
-            (!game.input.keyboard.isDown(Phaser.Keyboard.S) && !game.input.keyboard.isDown(Phaser.Keyboard.DOWN))) {
+        if (!this.isGameOver) {
+            if ((game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.UP)) &&
+                (!game.input.keyboard.isDown(Phaser.Keyboard.S) && !game.input.keyboard.isDown(Phaser.Keyboard.DOWN))) {
 
-            this.player.body.velocity.y -= this.PLAYER_VELOCITY_CHANGE;
+                this.player.body.velocity.y -= this.PLAYER_VELOCITY_CHANGE;
 
-        } else if ((game.input.keyboard.isDown(Phaser.Keyboard.S) || game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) &&
-            (!game.input.keyboard.isDown(Phaser.Keyboard.W) && !game.input.keyboard.isDown(Phaser.Keyboard.UP)) && !this.playerBoosted) {
+            } else if ((game.input.keyboard.isDown(Phaser.Keyboard.S) || game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) &&
+                (!game.input.keyboard.isDown(Phaser.Keyboard.W) && !game.input.keyboard.isDown(Phaser.Keyboard.UP)) && !this.playerBoosted) {
 
-            this.player.body.velocity.y += this.PLAYER_VELOCITY_CHANGE;
+                this.player.body.velocity.y += this.PLAYER_VELOCITY_CHANGE;
 
-        } else if (!this.playerBoosted) {
-            if (this.player.body.velocity.y <= 0) {
-                // if player is moving up slow it down to 0
-                this.player.body.velocity.y += 30;
+            } else if (!this.playerBoosted) {
+                if (this.player.body.velocity.y <= 0) {
+                    // if player is moving up slow it down to 0
+                    this.player.body.velocity.y += 30;
+                } else {
+                    // slowly fall to the bottom of the screen
+                    this.player.body.velocity.y = this.PLAYER_STATINARY_VELOCITY_Y;
+                }
+            }
+
+            if ((game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) &&
+                (!game.input.keyboard.isDown(Phaser.Keyboard.D) && !game.input.keyboard.isDown(Phaser.Keyboard.RIGHT))) {
+
+                this.player.body.velocity.x -= this.PLAYER_VELOCITY_CHANGE;
+
+            } else if ((game.input.keyboard.isDown(Phaser.Keyboard.D) || game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) &&
+                (!game.input.keyboard.isDown(Phaser.Keyboard.A) && !game.input.keyboard.isDown(Phaser.Keyboard.LEFT))) {
+
+                this.player.body.velocity.x += this.PLAYER_VELOCITY_CHANGE;
+
             } else {
-                // slowly fall to the bottom of the screen
-                this.player.body.velocity.y = this.PLAYER_STATINARY_VELOCITY_Y;
+                if (this.player.body.velocity.x > 0) {
+                    // if player is moving right
+                    this.player.body.velocity.x -= 15;
+                } else if (this.player.body.velocity.x < 0) {
+                    // if player is moving left
+                    this.player.body.velocity.x += 15;
+                }
             }
+
+            // Player overlapping objects
+            game.physics.arcade.overlap(this.player, this.obstacles, this.obstacleOverlap, null, this);
+            game.physics.arcade.overlap(this.player, this.instructions, this.burnInstructions, null, this);
+            game.physics.arcade.overlap(this.player, this.gales, this.boostPlayerUp, null, this);
+            game.physics.arcade.overlap(this.player, this.levelEvents, this.hitByAnEvent, null, this);
+
         }
-
-        if ((game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) &&
-            (!game.input.keyboard.isDown(Phaser.Keyboard.D) && !game.input.keyboard.isDown(Phaser.Keyboard.RIGHT))) {
-
-            this.player.body.velocity.x -= this.PLAYER_VELOCITY_CHANGE;
-
-        } else if ((game.input.keyboard.isDown(Phaser.Keyboard.D) || game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) &&
-            (!game.input.keyboard.isDown(Phaser.Keyboard.A) && !game.input.keyboard.isDown(Phaser.Keyboard.LEFT))) {
-
-            this.player.body.velocity.x += this.PLAYER_VELOCITY_CHANGE;
-
-        } else {
-            if (this.player.body.velocity.x > 0) {
-                // if player is moving right
-                this.player.body.velocity.x -= 15;
-            }
-            else if (this.player.body.velocity.x < 0) {
-                // if player is moving left
-                this.player.body.velocity.x += 15;
-            }
-        }
-
-        // Player overlapping objects
-        game.physics.arcade.overlap(this.player, this.obstacles, this.obstacleOverlap, null, this);
-        game.physics.arcade.overlap(this.player, this.instructions, this.burnInstructions, null, this);
-        game.physics.arcade.overlap(this.player, this.gales, this.boostPlayerUp, null, this);
-
     },
     createObstacle: function () {
-        // Creating the obstacle
-        do {
-            var obstacleIndex = game.rnd.integerInRange(0, LEVELS[this.level].obstacles.length - 1);
-        } while (obstacleIndex === this.previousObstacleIndex);
+        if (!this.isGameOver) {
+            // Creating the obstacle
+            do {
+                var obstacleIndex = game.rnd.integerInRange(0, LEVELS[this.level].obstacles.length - 1);
+            } while (obstacleIndex === this.previousObstacleIndex);
 
-        this.previousObstacleIndex = obstacleIndex;
+            this.previousObstacleIndex = obstacleIndex;
 
-        var x = game.rnd.integerInRange(0, game.world.width);
-        var y = -20;
-        var direction = Math.floor(game.rnd.pick([-1, 1]));
-        var xVelocity = 0;
-        var yVelocity = this.OBSTACLE_VELOCITY;
-        var maxVelocity = this.OBSTACLE_MAX_VELOCITY;
+            var x = game.rnd.integerInRange(0, game.world.width);
+            var y = -20;
+            var direction = Math.floor(game.rnd.pick([-1, 1]));
+            var xVelocity = 0;
+            var yVelocity = this.OBSTACLE_VELOCITY;
+            var maxVelocity = this.OBSTACLE_MAX_VELOCITY;
 
-        this.obstacle = new Obstacle(game, x, y, direction, LEVELS[this.level].obstacles[obstacleIndex], xVelocity, yVelocity, maxVelocity);
-        // Add the object to the game
-        game.add.existing(this.obstacle);
-        this.obstacles.add(this.obstacle);
+            this.obstacle = new Obstacle(game, x, y, direction, LEVELS[this.level].obstacles[obstacleIndex], xVelocity, yVelocity, maxVelocity);
+            // Add the object to the game
+            game.add.existing(this.obstacle);
+            this.obstacles.add(this.obstacle);
+        }
     },
     obstacleOverlap: function (player, obstacle) {
         if (!obstacle.burning) {
@@ -250,11 +269,11 @@ Play.prototype = {
                 // add progress to level completion bar
                 this.incrementBurnBar();
                 game.time.events.add(Phaser.Timer.SECOND, this.switchToAshe, this, obstacle);
-                if (obstacle.defaultSoundName !== undefined){
+                if (obstacle.defaultSoundName !== undefined) {
                     obstacle.defaultSoundName.stop();
                 }
 
-                if (obstacle.burningSoundName !== undefined){
+                if (obstacle.burningSoundName !== undefined) {
                     obstacle.burningSoundName.play('', 0, 0.3, true);
                 }
             } else {
@@ -265,6 +284,7 @@ Play.prototype = {
                 this.combo = 0;
 
                 this.flameSizzle.play('', 0, 0.3, false);
+                this.numberOfBadsHit++;
             }
             this.updateScore(obstacle.score);
             this.updateComboText();
@@ -283,11 +303,13 @@ Play.prototype = {
         this.scoreText.text = "Score: " + this.score;
     },
     playerBurnMeterConstantChange: function () {
-        // Constant change of the burn meter
-        if (this.playerBurnMeter > 0.1) {
-            this.playerBurnMeter += this.BURN_METER_CONSTANT_CHANGE;
+        if (!this.isGameOver) {
+            // Constant change of the burn meter
+            if (this.playerBurnMeter > 0.1) {
+                this.playerBurnMeter += this.BURN_METER_CONSTANT_CHANGE;
+            }
+            this.updatePlayerBurnMeter();
         }
-        this.updatePlayerBurnMeter();
     },
     updateBurnMeter: function (value) {
         // Change the value of the burn meter based on the object burned
@@ -343,7 +365,13 @@ Play.prototype = {
             game.time.events.loop(Phaser.Timer.HALF, this.playerBurnMeterConstantChange, this);
 
             // Play event
-            game.time.events.loop(Phaser.Timer.SECOND * 2, this.levelEvent, this);
+            var time;
+            if (LEVELS[this.level].eventLevel.type === "rain") {
+                time = Phaser.Timer.SECOND;
+            } else {
+                time = Phaser.Timer.SECOND * 5;
+            }
+            game.time.events.loop(time, this.levelEvent, this);
 
         }
     },
@@ -358,44 +386,36 @@ Play.prototype = {
         instructionBoard.destroy();
     },
     levelEvent: function () {
-        // spawn event at a random spot and add properties to it
-        var x = game.rnd.integerInRange(20, game.world.width - 20);
-        var y = game.rnd.integerInRange(200, game.world.height - 30);
-        this.eventLevel = game.add.sprite(x, y, "atlas", LEVELS[this.level].eventLevel.name);
-        this.eventLevel.anchor.set(0.5);
-        this.eventLevel.scale.setTo(0.1);
-        this.eventLevel.animations.add("trigger", LEVELS[this.level].eventLevel.mainAnimation, 15, false);
+        if (!this.isGameOver) {
+            if (LEVELS[this.level].eventLevel.type === "rain") {
+                // spawn event at a random spot and add properties to it
+                var x = game.rnd.integerInRange(20, game.world.width - 20);
+                var y = game.rnd.integerInRange(200, game.world.height - 30);
 
-        game.physics.enable(this.eventLevel, Phaser.Physics.ARCADE);
-        this.eventLevel.body.setCircle(100);
+                this.eventLevel = new LevelEvent(game, x, y, LEVELS[this.level].eventLevel);
 
-        this.eventScaling = game.add.tween(this.eventLevel.scale);
-        this.eventScaling.to({x: 1, y: 1}, 500, Phaser.Easing.Circular.Out, true, 0, 0, false);
-        // play the animation after a second of the spawn
-        game.time.events.add(Phaser.Timer.SECOND, this.levelEventAnimation, this, this.eventLevel);
-
-    },
-    levelEventAnimation: function (eventLevel) {
-        eventLevel.play("trigger");
-        eventLevel.animations.currentAnim.onComplete.add(this.eventAnimationStopped, this, eventLevel);
-    },
-    eventAnimationStopped: function (eventLevel) {
-        game.physics.arcade.overlap(this.player, eventLevel, this.hitByAnEvent, null, this);
-        this.eventLevel.destroy();
+                game.add.existing(this.eventLevel);
+                this.levelEvents.add(this.eventLevel);
+            }
+        }
 
     },
     hitByAnEvent: function (player, event) {
-        this.updateScore(-100);
-        if (this.combo > 1) {
-            this.playerBurnMeter += this.combo / 100;
+        if (event.levelEventAnimationStopped) {
+            this.updateScore(-100);
+            if (this.combo > 1) {
+                this.playerBurnMeter += this.combo / 100;
+            }
+            this.flameSizzle.play('', 0, 0.3, false);
+
+            this.updateSavedCombo();
+
+            this.combo = 0;
+            this.updateComboText();
+            this.updateBurnMeter(-0.5);
+            event.destroy();
+            this.numberOfBadsHit++;
         }
-        this.flameSizzle.play('', 0, 0.3, false);
-
-        this.updateSavedCombo();
-
-        this.combo = 0;
-        this.updateComboText();
-        this.updateBurnMeter(-0.5);
     },
     boostPlayerUp: function (player, gales) {
         this.playerBoosted = true;
@@ -425,8 +445,54 @@ Play.prototype = {
             LEVELS[this.level].score.bestTimeClear = LEVELS[this.level].score.currentTimeClear;
         }
     },
-    incrementBurnBar: function () {
-        this.burnBarBackground.scale.x += this.BURN_BAR_INCREMENT_CHANGE;
+    removeObjects: function () {
+
+        this.comboText.text = "";
+        this.scoreText.text = "";
+        /***
+         * TODO: Remove burn meter here
+         */
+        this.gales.kill();
+        this.obstacles.killAll();
+        this.levelEvents.killAll();
+
+    },
+    calculateGrade: function () {
+        var time;
+        if (LEVELS[this.level].score.currentTimeClear <= 60) {
+            time = 100;
+        } else if (LEVELS[this.level].score.currentTimeClear <= 90) {
+            time = 80
+        } else {
+            time = 60
+        }
+
+        var combo;
+        if (LEVELS[this.level].score.currentHighestCombo >= 30) {
+            combo = 100;
+        } else if (LEVELS[this.level].score.currentHighestCombo >= 15) {
+            combo = 80;
+        } else {
+            combo = 60;
+        }
+
+        var hits;
+        if (this.numberOfBadsHit === 0) {
+            hits = 100;
+        } else if (this.numberOfBadsHit <= 3) {
+            hits = 80;
+        } else if (this.numberOfBadsHit <= 5) {
+            hits = 60;
+        } else {
+            hits = 50;
+        }
+
+        var finalPercent = 25 + 0.25 * time + 0.25 * combo + 0.25 * hits;
+        LEVELS[this.level].score.currentGrade = finalPercent;
+        if (finalPercent > LEVELS[this.level].score.bestGrade) {
+            this.newHighScore = true;
+            LEVELS[this.level].score.bestGrade = finalPercent;
+        }
     }
     // render: function () {
     //     game.debug.body(this.player);
