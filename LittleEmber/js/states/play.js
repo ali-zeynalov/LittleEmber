@@ -331,15 +331,15 @@ Play.prototype = {
         // see if player volume needs to change (based on player size)
         if(currentSize <= 0.6) { // player is smol (0.6 is arbitrary, but no use making a const for this imo
             this.flameSoundLvl1.volume = 0.4;
-            console.log("player smol volume engaged");
+            // console.log("player smol volume engaged");
         }
         else if(currentSize > 0.6 && currentSize <= 1.5) { // player is avg size
             this.flameSoundLvl1.volume = 0.6;
-            console.log("player avg volume engaged");
+            // console.log("player avg volume engaged");
         }
         else { // player is a h*ckin' ch0nker
             this.flameSoundLvl1.volume = 1;
-            console.log("player ch0nker volume engaged");
+            // console.log("player ch0nker volume engaged");
         }
 
         this.playerScaling = game.add.tween(this.player.scale);
