@@ -30,12 +30,6 @@ Play.prototype = {
     preload: function () {
         // Load scripts
         game.load.script("GameOver", "js/states/gameOver.js");
-
-        /***
-         * TODO: prefab for score maybe WIP
-         * game.load.script("endLevelScore", "js/prefabs/endLevelScore.js");
-         */
-
     },
     create: function () {
         this.timeStart = game.time.totalElapsedSeconds();
@@ -46,10 +40,9 @@ Play.prototype = {
         // Audio
         this.levelMusic = game.add.audio(LEVELS[this.level].levelMusic);
         this.catchFire = game.add.audio("catchFire");
-        this.flameSoundLvl1 = game.add.audio("flameSoundLvl1");
-        this.catchFire.allowMultiple = true;
+        this.flameSound = game.add.audio(LEVELS[this.level].player.flameSound);
+        this.flameSound.play('', 0, 0.4, true); // 0.4 volume due to initial scale of player
         this.levelMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
-        this.flameSoundLvl1.play('', 0, 0.4, true); // 0.4 volume due to initial scale of player
         this.flameSizzle = game.add.audio("flameSizzle");
 
         // Arcade physics
@@ -60,13 +53,12 @@ Play.prototype = {
 
         // Gales mechanic at the bottom of the screen
         this.playerBoosted = false;
-        this.gales = game.add.tileSprite(0, game.world.height - 65, 600, 65, "atlas", "gale_01");
-        this.gales.animations.add("gales", ["gale_01", "gale_02", "gale_03", "gale_04", "gale_05", "gale_06"], 15, true);
+        this.gales = game.add.tileSprite(0, game.world.height - 65, 600, 65, "atlas", LEVELS[this.level].gales.galeSprite);
+        this.gales.animations.add("gales", LEVELS[this.level].gales.galeAnimation, 15, true);
         this.gales.animations.play("gales");
         game.physics.enable(this.gales, Phaser.Physics.ARCADE);
 
         // Default score
-
         // textStyle
         var textStyle = {
             font: "Audiowide",
@@ -116,10 +108,9 @@ Play.prototype = {
 
         this.playerBurnMeter = 0.5;
         // make player character
-        this.player = game.add.sprite(game.world.width / 2, game.world.height - 50, "atlas", "littleEmber");
+        this.player = game.add.sprite(game.world.width / 2, game.world.height - 50, "atlas", LEVELS[this.level].player.flameSprite);
         // TODO: Change the size of the player
-        // this.player.animations.add("burning", ["littleEmber_01", "littleEmber_02", "littleEmber_03", "littleEmber_04", "littleEmber_06", "littleEmber_07",
-        //     "littleEmber_08", "littleEmber_09", "littleEmber_10", "littleEmber_11"], 25, true);
+        // this.player.animations.add("burning", LEVELS[this.player].player.flameAnimation, 25, true);
         // this.player.animations.play("burning");
         this.player.scale.setTo(this.playerBurnMeter);
         this.player.anchor.set(0.5); // center the mass of player character
@@ -129,16 +120,15 @@ Play.prototype = {
         this.player.body.maxVelocity.x = this.PLAYER_MAX_VELOCITY_X;
         this.player.body.maxVelocity.y = this.PLAYER_MAX_VELOCITY_Y;
         this.player.body.collideWorldBounds = true;
-
         // Burn bar
         this.burnBar = game.add.sprite(game.world.width - 220, 0, "atlasBurnBar", "burnBar_01"); // (x, y, atlas, nameOnAtlas)
-        this.burnBar.animations.add("burning", ["burnBar_01", "burnBar_02", "burnBar_03", "burnBar_04", "burnBar_05", "burnBar_06", "burnBar_05", "burnBar_04", "burnBar_03", "burnBar_02"], 15, true);
+        this.burnBar.animations.add("burning", ["burnBar_01", "burnBar_02", "burnBar_03", "burnBar_04", "burnBar_05", "burnBar_06", "burnBar_05", "burnBar_04",
+            "burnBar_03", "burnBar_02"], 15, true);
         this.burnBar.animations.play("burning", true);
-        this.burnBarBackground = game.add.sprite(game.world.width-30, 0, "atlasBurnBar", "burnBarBackground");
+        this.burnBarBackground = game.add.sprite(game.world.width - 30, 0, "atlasBurnBar", "burnBarBackground");
         this.burnBarBackground.anchor.x = 1;
         this.burnBarBackground.scale.x = this.BURN_BAR_MAX;
         this.burnBarCutout = game.add.sprite(game.world.width - 220, 0, "atlasBurnBar", "burnBarCutout");
-
 
         this.startGame = false;
         this.isGameOver = false;
@@ -322,23 +312,21 @@ Play.prototype = {
         if (this.playerBurnMeter < 0.1) {
             this.playerBurnMeter = 0.1;
         }
-        let currentSize = this.playerBurnMeter + (this.combo > 1 ? this.combo / 100 : 0);
+        var currentSize = this.playerBurnMeter + (this.combo > 1 ? this.combo / 100 : 0);
 
         if (currentSize > 2) {
             currentSize = 2;
         }
 
         // see if player volume needs to change (based on player size)
-        if(currentSize <= 0.6) { // player is smol (0.6 is arbitrary, but no use making a const for this imo
-            this.flameSoundLvl1.volume = 0.4;
+        if (currentSize <= 0.6) { // player is smol (0.6 is arbitrary, but no use making a const for this imo
+            this.flameSound.volume = 0.4;
             // console.log("player smol volume engaged");
-        }
-        else if(currentSize > 0.6 && currentSize <= 1.5) { // player is avg size
-            this.flameSoundLvl1.volume = 0.6;
+        } else if (currentSize > 0.6 && currentSize <= 1.5) { // player is avg size
+            this.flameSound.volume = 0.6;
             // console.log("player avg volume engaged");
-        }
-        else { // player is a h*ckin' ch0nker
-            this.flameSoundLvl1.volume = 1;
+        } else { // player is a h*ckin' ch0nker
+            this.flameSound.volume = 1;
             // console.log("player ch0nker volume engaged");
         }
 

@@ -48,9 +48,9 @@ MainMenu.prototype = {
                 hovered: false
             },
             {
-                buttonName: "newGameButtonDown",
-                buttonHoverName: "newGameButton",
-                buttonHoverAnimation: ["newGameButton_01", "newGameButton_02"],
+                buttonName: "creditsButtonDown",
+                buttonHoverName: "creditsButton",
+                buttonHoverAnimation: ["creditsButton_01", "creditsButton_02"],
                 xPosition: this.BUTTON_MARGIN_X,
                 yPosition: game.world.height / 3 + this.BUTTON_MARGIN_Y * 3,
                 hovered: false
@@ -104,7 +104,7 @@ MainMenu.prototype = {
                 var levels = JSON.parse(localStorage.getItem("LEVELS"));
                 if (levels[0].version === LEVELS[0].version){
                     LEVELS = levels;
-                    console.log("Version is up to date :)");
+                    // console.log("Version is up to date :)");
                 } else {
                     console.log("Old version, Updating...");
                     localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
@@ -536,8 +536,6 @@ MainMenu.prototype = {
     },
     calculateBestGrade: function () {
         var percent = LEVELS[this.levelSelectPointer + 1].score.bestGrade;
-        console.log(this.levelSelectPointer + 1);
-        console.log(percent);
         this.bestRun.text = "Best Run:\n";
         if (percent >= 99) {
             this.bestRun.text += "S";
