@@ -43,10 +43,10 @@ Play.prototype = {
         // Audio
         this.levelMusic = game.add.audio(LEVELS[this.level].levelMusic);
         this.catchFire = game.add.audio("catchFire");
-        this.emberSound = game.add.audio("emberSound");
+        this.flameSoundLvl1 = game.add.audio("flameSoundLvl1");
         this.catchFire.allowMultiple = true;
         this.levelMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
-        this.emberSound.play('', 0, 0.6, true);
+        this.flameSoundLvl1.play('', 0, 0.4, true); // 0.4 volume due to initial scale of player
         this.flameSizzle = game.add.audio("flameSizzle");
 
         // Arcade physics
@@ -300,10 +300,24 @@ Play.prototype = {
         if (this.playerBurnMeter < 0.1) {
             this.playerBurnMeter = 0.1;
         }
-        var currentSize = this.playerBurnMeter + (this.combo > 1 ? this.combo / 100 : 0);
+        let currentSize = this.playerBurnMeter + (this.combo > 1 ? this.combo / 100 : 0);
 
         if (currentSize > 2) {
             currentSize = 2;
+        }
+
+        // see if player volume needs to change (based on player size)
+        if(currentSize <= 0.6) { // player is smol (0.6 is arbitrary, but no use making a const for this imo
+            this.flameSoundLvl1.volume = 0.4;
+            console.log("player smol volume engaged");
+        }
+        else if(currentSize > 0.6 && currentSize <= 1.5) { // player is avg size
+            this.flameSoundLvl1.volume = 0.6;
+            console.log("player avg volume engaged");
+        }
+        else { // player is a h*ckin' ch0nker
+            this.flameSoundLvl1.volume = 1;
+            console.log("player ch0nker volume engaged");
         }
 
         this.playerScaling = game.add.tween(this.player.scale);

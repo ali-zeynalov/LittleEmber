@@ -259,7 +259,7 @@ function preload() {
     game.load.script("mainMenu", "js/states/mainMenu.js");
     game.load.audio("menuMusic", ["assets/audio/menuMusic.mp3"]);
     game.load.audio("lvl1", ["assets/audio/lvl1.mp3"]);
-    game.load.audio("emberSound", ["assets/audio/emberSound.mp3"]);
+    game.load.audio("flameSoundLvl1", ["assets/audio/flameSoundLvl1.mp3"]);
     game.load.audio("catchFire", ["assets/audio/catchFire.mp3"]);
     game.load.audio("flameSizzle", ["assets/audio/flameSizzle.mp3"]);
     game.load.audio("waterDrop", ["assets/audio/waterDrop.mp3"]);
