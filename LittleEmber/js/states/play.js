@@ -15,10 +15,11 @@ var Play = function (game) {
     this.PLAYER_MAX_VELOCITY_X = 300;
     this.PLAYER_MAX_VELOCITY_Y = 360;
     this.PLAYER_STATINARY_VELOCITY_Y = 100;
-    this.BURN_BAR_MAX = 0.9;
-    this.BURN_BAR_MIN = 0.03;
-    this.BURN_BAR_INCREMENT_CHANGE = -0.03;
     this.BURN_METER_CONSTANT_CHANGE = -0.01;
+
+    this.BURN_BAR_MAX = 0.9;
+    this.BURN_BAR_MIN = 0.045;
+    this.BURN_BAR_INCREMENT_CHANGE = -0.025;
 };
 
 Play.prototype = {
@@ -26,10 +27,6 @@ Play.prototype = {
         // Initialize incoming variables
         // this.LEVELS = LEVELS;
         this.level = level;
-    },
-    preload: function () {
-        // Load scripts
-        game.load.script("GameOver", "js/states/gameOver.js");
     },
     create: function () {
         this.timeStart = game.time.totalElapsedSeconds();
@@ -41,8 +38,8 @@ Play.prototype = {
         this.levelMusic = game.add.audio(LEVELS[this.level].levelMusic);
         this.catchFire = game.add.audio("catchFire");
         this.flameSound = game.add.audio(LEVELS[this.level].player.flameSound);
-        this.flameSound.play('', 0, 0.4, true); // 0.4 volume due to initial scale of player
-        this.levelMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
+        this.flameSound.play("", 0, 0.4, true); // 0.4 volume due to initial scale of player
+        this.levelMusic.play("", 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
         this.flameSizzle = game.add.audio("flameSizzle");
 
         // Arcade physics
@@ -82,7 +79,6 @@ Play.prototype = {
         this.comboText = game.add.text(64, 64, "", textStyle);
         this.comboText.setShadow(3, 3, "rgba(255,255,255,255)", 2);
 
-
         // Group that holds all of the obstacles
         this.obstacles = game.add.group();
         this.levelEvents = game.add.group();
@@ -106,29 +102,32 @@ Play.prototype = {
         this.instructions.add(this.controlsInstruction);
         this.instructions.add(this.levelInstructions);
 
-        this.playerBurnMeter = 0.5;
         // make player character
+        this.playerBurnMeter = 0.5;
+        this.playerSize = 0;
+
         this.player = game.add.sprite(game.world.width / 2, game.world.height - 50, "atlas", LEVELS[this.level].player.flameSprite);
-        // TODO: Change the size of the player
-        // this.player.animations.add("burning", LEVELS[this.player].player.flameAnimation, 25, true);
-        // this.player.animations.play("burning");
+        this.player.animations.add("burning", LEVELS[this.level].player.flameAnimation, 30, true);
+        this.player.animations.play("burning");
         this.player.scale.setTo(this.playerBurnMeter);
         this.player.anchor.set(0.5); // center the mass of player character
         // player physics
         game.physics.enable(this.player, Phaser.Physics.ARCADE);
-        this.player.body.setCircle(40, 10, 20);
+        this.player.body.setCircle(50, 2, 13);
         this.player.body.maxVelocity.x = this.PLAYER_MAX_VELOCITY_X;
         this.player.body.maxVelocity.y = this.PLAYER_MAX_VELOCITY_Y;
         this.player.body.collideWorldBounds = true;
+
         // Burn bar
-        this.burnBar = game.add.sprite(game.world.width - 220, 0, "atlasBurnBar", "burnBar_01"); // (x, y, atlas, nameOnAtlas)
-        this.burnBar.animations.add("burning", ["burnBar_01", "burnBar_02", "burnBar_03", "burnBar_04", "burnBar_05", "burnBar_06", "burnBar_05", "burnBar_04",
-            "burnBar_03", "burnBar_02"], 15, true);
+        this.burnBar = game.add.sprite(game.world.width - 220, 0, "atlas", LEVELS[this.level].burnMeter.burnMeterSprite); // (x, y, atlas, nameOnAtlas)
+        this.burnBar.animations.add("burning", LEVELS[this.level].burnMeter.burnMeterAnimation, 15, true);
         this.burnBar.animations.play("burning", true);
-        this.burnBarBackground = game.add.sprite(game.world.width - 30, 0, "atlasBurnBar", "burnBarBackground");
+
+        this.burnBarBackground = game.add.sprite(game.world.width, 0, "atlas", LEVELS[this.level].burnMeter.burnMeterBackground);
         this.burnBarBackground.anchor.x = 1;
         this.burnBarBackground.scale.x = this.BURN_BAR_MAX;
-        this.burnBarCutout = game.add.sprite(game.world.width - 220, 0, "atlasBurnBar", "burnBarCutout");
+
+        this.burnBarCutout = game.add.sprite(game.world.width - 220, 0, "atlas", LEVELS[this.level].burnMeter.burnMeterCutout);
 
         this.startGame = false;
         this.isGameOver = false;
@@ -138,6 +137,15 @@ Play.prototype = {
         if (!this.startGame) {
             this.isPlayerReady();
         }
+
+        if (this.player.scale.x >= 1.3) {
+            this.playerSize = 2;
+        } else if (this.player.scale.x >= 0.8) {
+            this.playerSize = 1;
+        } else {
+            this.playerSize = 0;
+        }
+        // console.log(this.playerSize);
 
         // Checks if boost from the wind is over
         if (this.playerBoosted && this.player.body.y <= game.world.height / 2) {
@@ -167,6 +175,7 @@ Play.prototype = {
                 localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
             }
             game.sound.stopAll();
+            this.levelMusic.resume();
             this.removeObjects();
 
             this.isGameOver = true;
@@ -251,45 +260,68 @@ Play.prototype = {
     },
     obstacleOverlap: function (player, obstacle) {
         if (!obstacle.burning) {
+            var justScorched = false;
             obstacle.burning = true;
             if (obstacle.burnable) {
-                this.combo += 1;
-                this.catchFire.play('', 0, 0.3, false);
-                obstacle.animations.play("burning", true);
-                // add progress to level completion bar
-                this.incrementBurnBar();
-                game.time.events.add(Phaser.Timer.SECOND, this.switchToAshe, this, obstacle);
-                if (obstacle.defaultSoundName !== undefined) {
-                    obstacle.defaultSoundName.stop();
+                // If player is smaller than the object
+                if (this.playerSize < obstacle.size) {
+
+                    this.playerBurnMeter += this.combo / 100;
+                    this.updateSavedCombo();
+                    this.combo = 0;
+                    obstacle.animations.play("burning", true);
+                    obstacle.animations.play("scorched", true);
+                    game.time.events.add(Phaser.Timer.HALF, this.switchToScorchedAshe, this, obstacle);
+                    this.numberOfBadsHit = this.numberOfBadsHit + 0.5;
+                    justScorched = true;
+                } else {
+                    this.combo += 1;
+                    this.catchFire.play('', 0, 0.3, false);
+                    obstacle.animations.play("burning", true);
+                    // add progress to level completion bar
+                    this.incrementBurnBar();
+                    game.time.events.add(Phaser.Timer.HALF, this.switchToAshe, this, obstacle);
+                    if (obstacle.defaultSoundName !== undefined) {
+                        obstacle.defaultSoundName.stop();
+                    }
+
+                    if (obstacle.burningSoundName !== undefined) {
+                        obstacle.burningSoundName.play('', 0, 0.3, true);
+                    }
                 }
 
-                if (obstacle.burningSoundName !== undefined) {
-                    obstacle.burningSoundName.play('', 0, 0.3, true);
-                }
             } else {
-                if (this.combo > 1) {
-                    this.playerBurnMeter += this.combo / 100;
-                }
+                this.playerBurnMeter += this.combo / 100;
+
                 this.updateSavedCombo();
                 this.combo = 0;
-
-                this.flameSizzle.play('', 0, 0.3, false);
+                if (obstacle.water) {
+                    this.flameSizzle.play('', 0, 0.3, false);
+                }
                 this.numberOfBadsHit++;
             }
-            this.updateScore(obstacle.score);
+            if (!justScorched) {
+                this.updateScore(obstacle.score);
+                this.updateBurnMeter(obstacle.burnMeterChange);
+            } else {
+                this.updateBurnMeter(obstacle.scorchMeterChange);
+            }
             this.updateComboText();
-            this.updateBurnMeter(obstacle.burnMeterChange);
+
         }
     },
     switchToAshe: function (obstacle) {
         if (obstacle.burningSoundName !== undefined) {
             obstacle.burningSoundName.stop();
         }
-        obstacle.animations.play("ashe", true);
+        obstacle.animations.play("ashe", false);
+    },
+    switchToScorchedAshe: function (obstacle) {
+        obstacle.animations.play("scorchedAshe", false);
     },
     updateScore: function (scoreValue) {
         // Update score
-        this.score += scoreValue;
+        this.score += scoreValue + Math.round(scoreValue * this.combo / 100);
         this.scoreText.text = "Score: " + this.score;
     },
     playerBurnMeterConstantChange: function () {
@@ -401,7 +433,6 @@ Play.prototype = {
             this.combo = 0;
             this.updateComboText();
             this.updateBurnMeter(-0.5);
-            event.destroy();
             this.numberOfBadsHit++;
         }
     },
@@ -440,6 +471,10 @@ Play.prototype = {
         /***
          * TODO: Remove burn meter here
          */
+        this.burnBar.destroy();
+        this.burnBarBackground.destroy();
+        this.burnBarCutout.destroy();
+
         this.gales.kill();
         this.obstacles.killAll();
         this.levelEvents.killAll();
@@ -475,7 +510,20 @@ Play.prototype = {
             hits = 50;
         }
 
-        var finalPercent = 25 + 0.25 * time + 0.25 * combo + 0.25 * hits;
+        var score;
+        if (LEVELS[this.level].score.currentScore >= 2000) {
+            score = 100;
+        } else if (LEVELS[this.level].score.currentScore >= 1700) {
+            score = 80;
+        } else if (LEVELS[this.level].score.currentScore >= 1500) {
+            score = 70;
+        } else if (LEVELS[this.level].score.currentScore >= 1200) {
+            score = 60;
+        } else {
+            score = 50;
+        }
+
+        var finalPercent = 20 + 0.20 * time + 0.20 * combo + 0.20 * hits + 0.20 * score;
         LEVELS[this.level].score.currentGrade = finalPercent;
         if (finalPercent > LEVELS[this.level].score.bestGrade) {
             this.newHighScore = true;
@@ -485,6 +533,7 @@ Play.prototype = {
     incrementBurnBar: function () {
         this.burnBarBackground.scale.x += this.BURN_BAR_INCREMENT_CHANGE;
     }
+    // ,
     // render: function () {
     //     game.debug.body(this.player);
     //     // game.debug.spriteInfo(this.player, 32, 32)
