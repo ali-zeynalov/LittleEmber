@@ -104,8 +104,6 @@ GameOver.prototype = {
             this.tips.text = "Tip: Try avoiding water and big objects.";
         }
 
-        //TODO: Show burn meter after the game
-
         if (this.levelComplete) {
             this.pointer = 1;
         } else {
@@ -184,7 +182,7 @@ GameOver.prototype = {
     titleScreen: function () {
         // switch to MainMenu state
         game.sound.stopAll();
-        game.state.start("MainMenu");
+        game.state.start("MainMenu", true, false, true);
     },
     updateMenu: function (isFirstTime) {
         // Going through each menu option array variable and checking parameters
@@ -249,7 +247,7 @@ GameOver.prototype = {
 
         var bestCombo = "Highest Combo: " + LEVELS[this.level].score.currentHighestCombo + "\n";
 
-        var bestScore = "Highest Score: " + LEVELS[this.level].score.currentScore + "\n";
+        var bestScore = "Score: " + LEVELS[this.level].score.currentScore + "\n";
         var bestAllTimeStats = bestTime + bestCombo + bestScore;
         this.stats.text = bestAllTimeStats;
 

@@ -10,7 +10,7 @@ var game = new Phaser.Game(600, 800, Phaser.AUTO, "myGame", {preload: preload, c
 var LEVELS = [
     {
         level: 0,
-        version: "0.16.2"
+        version: "0.16.6.11"
         /***
          * TODO: Tutorial level data goes here
          */
@@ -25,6 +25,7 @@ var LEVELS = [
         obstacles: [
             {
                 name: "sticks",
+                size: 0,
                 burnable: true,
                 burning: false,
                 hitBoxScaleX: 60,
@@ -48,29 +49,34 @@ var LEVELS = [
             },
             {
                 name: "bush",
+                size: 1,
                 burnable: true,
                 burning: false,
-                hitBoxScaleX: 100,
-                hitBoxScaleY: 100,
+                hitBoxScaleX: 110,
+                hitBoxScaleY: 70,
                 hitBoxOffsetX: 10,
-                hitBoxOffsetY: 15,
+                hitBoxOffsetY: 18,
                 /*** TODO: Use this structure when we have animations for our objects
                  idleAnimationFrames: ["animation0", "animation1", "animation2"],
                  burningAnimationFrames: ["animation0", "animation1", "animation2"],
                  burnedAnimationFrames: ["animation0", "animation1", "animation2"],
                  */
                 idleAnimationFrames: ["bush"],
+                scorchAnimationFrames: ["bushScorch_01", "bushScorch_02"],
+                scorchAshenAnimationFrames: ["bushScorchAshen_01"],
                 burningAnimationFrames: ["bushBurning_01", "bushBurning_02"],
                 burnedAnimationFrames: ["ashes"],
                 /*** TODO: Use this structure when we have sound for our objects
                  defaultSoundName: "defaultSound",
                  burningSoundName: "burningSound"
                  */
-                burnMeterChange: -0.2,
+                burnMeterChange: 0.1,
+                scorchMeterChange: -0.08,
                 score: 100
             },
             {
-                name: "flowers",
+                name: "flowers_01",
+                size: 0,
                 burnable: true,
                 burning: false,
                 hitBoxScaleX: 50,
@@ -82,8 +88,56 @@ var LEVELS = [
                  burningAnimationFrames: ["animation0", "animation1", "animation2"],
                  burnedAnimationFrames: ["animation0", "animation1", "animation2"],
                  */
-                idleAnimationFrames: ["flowers"],
-                burningAnimationFrames: ["flowersBurning_01", "flowersBurning_02"],
+                idleAnimationFrames: ["flowers_01"],
+                burningAnimationFrames: ["flowers1Burning_01", "flowers1Burning_02"],
+                burnedAnimationFrames: ["ashes"],
+                /*** TODO: Use this structure when we have sound for our objects
+                 defaultSoundName: "defaultSound",
+                 burningSoundName: "burningSound"
+                 */
+                burnMeterChange: 0.1,
+                score: 25
+            },
+            {
+                name: "flowers_02",
+                size: 0,
+                burnable: true,
+                burning: false,
+                hitBoxScaleX: 80,
+                hitBoxScaleY: 50,
+                hitBoxOffsetX: 0,
+                hitBoxOffsetY: 5,
+                /*** TODO: Use this structure when we have animations for our objects
+                 idleAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burningAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burnedAnimationFrames: ["animation0", "animation1", "animation2"],
+                 */
+                idleAnimationFrames: ["flowers_02"],
+                burningAnimationFrames: ["flowers2Burning_01", "flowers2Burning_02"],
+                burnedAnimationFrames: ["ashes"],
+                /*** TODO: Use this structure when we have sound for our objects
+                 defaultSoundName: "defaultSound",
+                 burningSoundName: "burningSound"
+                 */
+                burnMeterChange: 0.1,
+                score: 25
+            },
+            {
+                name: "flowers_03",
+                size: 0,
+                burnable: true,
+                burning: false,
+                hitBoxScaleX: 60,
+                hitBoxScaleY: 60,
+                hitBoxOffsetX: 5,
+                hitBoxOffsetY: 5,
+                /*** TODO: Use this structure when we have animations for our objects
+                 idleAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burningAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burnedAnimationFrames: ["animation0", "animation1", "animation2"],
+                 */
+                idleAnimationFrames: ["flowers_03"],
+                burningAnimationFrames: ["flowers3Burning_01", "flowers3Burning_02"],
                 burnedAnimationFrames: ["ashes"],
                 /*** TODO: Use this structure when we have sound for our objects
                  defaultSoundName: "defaultSound",
@@ -94,10 +148,11 @@ var LEVELS = [
             },
             {
                 name: "cup",
+                size: 0,
                 burnable: true,
                 burning: false,
-                hitBoxScaleX: 40,
-                hitBoxScaleY: 40,
+                hitBoxScaleX: 80,
+                hitBoxScaleY: 35,
                 hitBoxOffsetX: 2,
                 hitBoxOffsetY: 7,
                 /*** TODO: Use this structure when we have animations for our objects
@@ -117,19 +172,20 @@ var LEVELS = [
             },
             {
                 name: "wrapper",
+                size: 0,
                 burnable: true,
                 burning: false,
-                hitBoxScaleX: 55,
-                hitBoxScaleY: 35,
-                hitBoxOffsetX: 10,
-                hitBoxOffsetY: 7,
+                hitBoxScaleX: 50,
+                hitBoxScaleY: 30,
+                hitBoxOffsetX: 5,
+                hitBoxOffsetY: 5,
                 /*** TODO: Use this structure when we have animations for our objects
                  idleAnimationFrames: ["animation0", "animation1", "animation2"],
                  burningAnimationFrames: ["animation0", "animation1", "animation2"],
                  burnedAnimationFrames: ["animation0", "animation1", "animation2"],
                  */
                 idleAnimationFrames: ["wrapper"],
-                burningAnimationFrames: ["wrapper_02", "wrapper_03"],
+                burningAnimationFrames: ["wrapperBurning_01", "wrapperBurning_02"],
                 burnedAnimationFrames: ["ashes"],
                 /*** TODO: Use this structure when we have sound for our objects
                  defaultSoundName: "defaultSound",
@@ -140,6 +196,7 @@ var LEVELS = [
             },
             {
                 name: "cricket",
+                size: 0,
                 burnable: true,
                 burning: false,
                 hitBoxScaleX: 50,
@@ -160,23 +217,48 @@ var LEVELS = [
                  */
                 defaultSoundName: "cricketNorm",
                 burningSoundName: "cricketFire",
-                burnMeterChange: -0.05,
+                burnMeterChange: 0.02,
                 score: 100
             },
             {
-                name: "puddle",
+                name: "puddle_01",
+                size: 0,
+                water: true,
                 burnable: false,
                 burning: false,
-                hitBoxScaleX: 100,
-                hitBoxScaleY: 60,
+                hitBoxScaleX: 190,
+                hitBoxScaleY: 30,
                 hitBoxOffsetX: 10,
-                hitBoxOffsetY: 10,
+                hitBoxOffsetY: 5,
                 /*** TODO: Use this structure when we have animations for our objects
                  idleAnimationFrames: ["animation0", "animation1", "animation2"],
                  burningAnimationFrames: ["animation0", "animation1", "animation2"],
                  burnedAnimationFrames: ["animation0", "animation1", "animation2"],
                  */
-                idleAnimationFrames: ["puddle"],
+                idleAnimationFrames: ["puddle_01"],
+                /*** TODO: Use this structure when we have sound for our objects
+                 defaultSoundName: "defaultSound",
+                 burningSoundName: "burningSound"
+                 */
+                burnMeterChange: -0.4,
+                score: -100
+            },
+            {
+                name: "puddle_02",
+                size: 0,
+                water: true,
+                burnable: false,
+                burning: false,
+                hitBoxScaleX: 101,
+                hitBoxScaleY: 27,
+                hitBoxOffsetX: 0,
+                hitBoxOffsetY: 5,
+                /*** TODO: Use this structure when we have animations for our objects
+                 idleAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burningAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burnedAnimationFrames: ["animation0", "animation1", "animation2"],
+                 */
+                idleAnimationFrames: ["puddle_02"],
                 /*** TODO: Use this structure when we have sound for our objects
                  defaultSoundName: "defaultSound",
                  burningSoundName: "burningSound"
@@ -186,10 +268,12 @@ var LEVELS = [
             },
             {
                 name: "rock_01",
+                size: 0,
+                water: false,
                 burnable: false,
                 burning: false,
-                hitBoxScaleX: 45,
-                hitBoxScaleY: 40,
+                hitBoxScaleX: 100,
+                hitBoxScaleY: 100,
                 hitBoxOffsetX: 0,
                 hitBoxOffsetY: 10,
                 /*** TODO: Use this structure when we have animations for our objects
@@ -207,11 +291,12 @@ var LEVELS = [
                 score: -20
             },
             {
-                name: "stump_02",
-                burnable: false,
+                name: "stump",
+                size: 2,
+                burnable: true,
                 burning: false,
-                hitBoxScaleX: 100,
-                hitBoxScaleY: 55,
+                hitBoxScaleX: 180,
+                hitBoxScaleY: 105,
                 hitBoxOffsetX: 20,
                 hitBoxOffsetY: 10,
                 /*** TODO: Use this structure when we have animations for our objects
@@ -219,18 +304,51 @@ var LEVELS = [
                  burningAnimationFrames: ["animation0", "animation1", "animation2"],
                  burnedAnimationFrames: ["animation0", "animation1", "animation2"],
                  */
-                idleAnimationFrames: ["stump_02"],
+                idleAnimationFrames: ["stump"],
+                scorchAnimationFrames: ["stumpScorch_01", "stumpScorch_02"],
+                scorchAshenAnimationFrames: ["stumpScorchAshen_01", "stumpScorchAshen_02"],
+                burningAnimationFrames: ["stumpBurning_01", "stumpBurning_02"],
+                burnedAnimationFrames: ["ashes"],
                 /*** TODO: Use this structure when we have sound for our objects
                  defaultSoundName: "defaultSound",
                  burningSoundName: "burningSound"
                  */
-                burnMeterChange: -0.1,
-                score: -20
+                burnMeterChange: 0.1,
+                scorchMeterChange: -0.08,
+                score: 100
+            },
+            {
+                name: "logs",
+                size: 2,
+                burnable: true,
+                burning: false,
+                hitBoxScaleX: 250,
+                hitBoxScaleY: 85,
+                hitBoxOffsetX: 0,
+                hitBoxOffsetY: 10,
+                /*** TODO: Use this structure when we have animations for our objects
+                 idleAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burningAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burnedAnimationFrames: ["animation0", "animation1", "animation2"],
+                 */
+                idleAnimationFrames: ["logs"],
+                scorchAnimationFrames: ["logsScorch_01", "logsScorch_02"],
+                scorchAshenAnimationFrames: ["logsScorchAshen_01", "logsScorchAshen_02"],
+                burningAnimationFrames: ["logsBurning_01", "logsBurning_02"],
+                burnedAnimationFrames: ["ashes"],
+                /*** TODO: Use this structure when we have sound for our objects
+                 defaultSoundName: "defaultSound",
+                 burningSoundName: "burningSound"
+                 */
+                burnMeterChange: 0.1,
+                scorchMeterChange: -0.08,
+                score: 100
             }
         ],
         player: {
             flameSprite: "littleEmber",
-            flameAnimation: [""],
+            flameAnimation: ["littleEmber_01", "littleEmber_02", "littleEmber_03", "littleEmber_04", "littleEmber_05", "littleEmber_06", "littleEmber_07",
+                "littleEmber_08", "littleEmber_09", "littleEmber_10", "littleEmber_11"],
             flameSound: "flameSoundLvl1"
         },
         gales: {
@@ -240,8 +358,16 @@ var LEVELS = [
         eventLevel: {
             type: "rain",
             name: "waterDropOutline",
-            mainAnimation: ["waterDrop_01", "waterDrop_02", "waterDrop_03", "waterDrop_04", "waterDrop_05", "waterDrop_06", "waterDrop_07", "waterDrop_08",
-                "waterDrop_09", "waterDrop_10"]
+            mainAnimation: ["waterDropOutline", "waterDropShadow_08", "waterDropShadow_07", "waterDropShadow_06", "waterDropShadow_05", "waterDropShadow_04",
+                "waterDropShadow_03", "waterDropShadow_02", "waterDropOutline"],
+            waterDropBody: "waterDrop_01",
+            waterDropSplash: ["waterDrop_02", "waterDrop_03", "waterDrop_04", "waterDrop_05", "waterDrop_06"]
+        },
+        burnMeter: {
+            burnMeterSprite: "burnMeter_01",
+            burnMeterAnimation: ["burnMeter_01", "burnMeter_02", "burnMeter_03"],
+            burnMeterBackground: "burnMeterBackground_01",
+            burnMeterCutout: "burnMeterCutout_01"
         },
         scoreGoal: 2500,
         score: {
@@ -305,28 +431,12 @@ var LEVELS = [
 ];
 
 function preload() {
-    // preload assets
-    game.load.image("mainMenuBackground", "assets/img/individualSprites/mainMenu.png");
-    game.load.image("background_01", "assets/img/individualSprites/background_01.png");
-    game.load.image("planks", "assets/img/individualSprites/planks_01.png");
-
-    game.load.atlas("atlas", "assets/img/spritesheet.png", "assets/img/sprites.json");
-    game.load.atlas("atlasBurnBar", "assets/img/atlasBurnBar.png", "assets/img/atlasBurnBar.json");
-
-    game.load.script("mainMenu", "js/states/mainMenu.js");
-    game.load.audio("menuMusic", ["assets/audio/menuMusic.mp3"]);
-    game.load.audio("lvl1", ["assets/audio/lvl1.mp3"]);
-    game.load.audio("flameSoundLvl1", ["assets/audio/flameSoundLvl1.mp3"]);
-    game.load.audio("catchFire", ["assets/audio/catchFire.mp3"]);
-    game.load.audio("flameSizzle", ["assets/audio/flameSizzle.mp3"]);
-    game.load.audio("waterDrop", ["assets/audio/waterDrop.mp3"]);
-
-    game.load.audio("cricketNorm", ["assets/audio/cricketNorm.mp3"]);
-    game.load.audio("cricketFire", ["assets/audio/cricketFire.mp3"]);
+    // Load loading assets
+    game.load.atlas("preloadAtlas", "assets/img/spritesheetPreload.png", "assets/img/spritesPreload.json");
 }
 
 function create() {
-    // switch to main menu state
-    game.state.add("MainMenu", MainMenu);
-    game.state.start("MainMenu");
+    // switch to loading state
+    game.state.add("Loading", Loading);
+    game.state.start("Loading");
 }

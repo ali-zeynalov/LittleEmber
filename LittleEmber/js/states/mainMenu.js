@@ -8,12 +8,13 @@
 var MainMenu = function (game) {
     this.BUTTON_MARGIN_X = 10;
     this.BUTTON_MARGIN_Y = 60;
+
+    this.POINTER_OFFSET_X = 30;
 };
 
 MainMenu.prototype = {
-    preload: function () {
-        // Preload scripts
-        game.load.script("play", "js/states/play.js");
+    init: function (startMusic) {
+        this.startMusic = startMusic;
     },
     create: function () {
         // Create variables to control the menu
@@ -37,12 +38,9 @@ MainMenu.prototype = {
                 greyedOut: true
             },
             {
-                /***
-                 * TODO: Below opetions are here as placeholders for testing, need to replace them with other menu options
-                 */
-                buttonName: "newGameButtonDown",
-                buttonHoverName: "newGameButton",
-                buttonHoverAnimation: ["newGameButton_01", "newGameButton_02"],
+                buttonName: "tutorialButtonDown",
+                buttonHoverName: "tutorialButton",
+                buttonHoverAnimation: ["tutorialButton_01", "tutorialButton_02"],
                 xPosition: this.BUTTON_MARGIN_X,
                 yPosition: game.world.height / 3 + this.BUTTON_MARGIN_Y * 2,
                 hovered: false
@@ -96,13 +94,16 @@ MainMenu.prototype = {
         };
 
         // Background music
-        this.menuMusic = game.add.audio("menuMusic");
-        this.menuMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
+        if (this.startMusic) {
+            this.menuMusic = game.add.audio("menuMusic");
+            this.menuMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
+
+        }
 
         if (window.localStorage) {
             if (localStorage.getItem("LEVELS") !== null) {
                 var levels = JSON.parse(localStorage.getItem("LEVELS"));
-                if (levels[0].version === LEVELS[0].version){
+                if (levels[0].version === LEVELS[0].version) {
                     LEVELS = levels;
                     // console.log("Version is up to date :)");
                 } else {
@@ -118,13 +119,15 @@ MainMenu.prototype = {
         this.menuBackground = game.add.sprite(0, 0, "mainMenuBackground");
 
         // Name of our game
-        var titleText = game.add.text(game.world.width / 2, game.world.height / 8, "Little Ember", {
+        var textStyle = {
             font: "Comic Sans MS",
             fontSize: "60px",
             fill: "#faba45"
-        });
+        };
+
+        var titleText = game.add.text(game.world.width / 2, game.world.height / 8, "Little Ember", textStyle);
         titleText.anchor.set(0.5);
-        titleText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+        titleText.setShadow(3, 3, 'rgba(0,0,0,0.7)', 0);
 
         // Pointer to keep track on what menu button we are on
         this.pointer = 0;
@@ -132,7 +135,9 @@ MainMenu.prototype = {
         this.updateMenu(true);
         this.isMenuChanging = false;
         // Point sprite to make it look nice
-        this.pointerSprite = game.add.sprite(this.menuButtons.getAt(0).width + 20, this.MENU_SELECT[0].yPosition, "atlas", "littleEmber");
+        this.pointerSprite = game.add.sprite(this.menuButtons.getAt(0).width + this.POINTER_OFFSET_X, this.MENU_SELECT[0].yPosition, "atlas", "littleEmber");
+        this.pointerSprite.animations.add("burning", LEVELS[1].player.flameAnimation, 30, true);
+        this.pointerSprite.animations.play("burning");
         this.pointerSprite.anchor.set(0.5);
         this.pointerSprite.scale.setTo(0.2);
 
@@ -142,7 +147,7 @@ MainMenu.prototype = {
         this.switchingStates = false;
 
         // Show player their previous stats
-        var textStyle = {
+        textStyle = {
             font: "Comic Sans MS",
             fontSize: "48px",
             fill: "#fa8b1d"
@@ -150,32 +155,31 @@ MainMenu.prototype = {
 
         this.bestLevelStatsTitle = game.add.text(game.world.width / 2, game.world.height - game.world.height / 3, "", textStyle);
         this.bestLevelStatsTitle.anchor.set(0.5);
-        this.bestLevelStatsTitle.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+        this.bestLevelStatsTitle.setShadow(3, 3, 'rgba(0,0,0,0.7)', 0);
 
         textStyle = {
             font: "Comic Sans MS",
             fontSize: "28px",
             fill: "#fa8b1d",
             align: "left",
-            lineSpacing: "1px"
         };
 
         this.bestAllTimeStats = game.add.text(20, game.world.height - game.world.height / 7, "", textStyle);
         this.bestAllTimeStats.anchor.set(0, 0.5);
-        this.bestAllTimeStats.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+        this.bestAllTimeStats.setShadow(3, 3, 'rgba(0,0,0,0.7)', 0);
 
         textStyle = {
             font: "Comic Sans MS",
             fontSize: "28px",
             fill: "#fa8b1d",
             align: "center",
-            lineSpacing: "1px"
         };
 
         this.bestRun = game.add.text(game.world.width - 20, game.world.height - game.world.height / 7, "", textStyle);
         this.bestRun.anchor.set(1, 0.5);
-        this.bestRun.setShadow(3, 3, 'rgba(0,0,0,0.5)', 0);
+        this.bestRun.setShadow(3, 3, 'rgba(0,0,0,0.7)', 0);
 
+        this.menuSelectSound = game.add.audio("menuSelect");
 
     },
     update: function () {
@@ -184,6 +188,9 @@ MainMenu.prototype = {
             if (this.pointer === 0) {
                 this.switchingStates = true;
                 this.startNewGame();
+            } else if (this.pointer === 3) {
+                this.switchingStates = true;
+                this.credits();
             }
         }
 
@@ -240,6 +247,7 @@ MainMenu.prototype = {
         // Updates main menu
         if (!this.LEVEL_SELECT.levelSelect) {
             if (this.isMenuChanging) {
+                this.menuSelectSound.play("", 0, 0.2, false);
                 this.updateMenu(false);
                 this.bestLevelStatsTitle.text = "";
                 this.bestAllTimeStats.text = "";
@@ -247,6 +255,7 @@ MainMenu.prototype = {
             }
         } else {
             if (this.isMenuChanging) {
+                this.menuSelectSound.play("", 0, 0.2, false);
                 this.updateLevelSelect(false);
                 this.showBestStats();
             }
@@ -391,7 +400,7 @@ MainMenu.prototype = {
                 } else {
                     menuButton = this.menuButtons.getAt(i);
                     menuButton.loadTexture("atlas", this.MENU_SELECT[i].buttonHoverName);
-                    this.pointerSprite.x = menuButton.width + 20;
+                    this.pointerSprite.x = menuButton.width + this.POINTER_OFFSET_X;
                     this.pointerSprite.y = this.MENU_SELECT[i].yPosition;
                     menuButton.alpha = 1;
 
@@ -459,7 +468,7 @@ MainMenu.prototype = {
                 } else {
                     levelButton = this.levelButtons.getAt(i);
                     levelButton.loadTexture("atlas", this.LEVEL_SELECT.levels[i].buttonHoverName);
-                    this.pointerSprite.x = this.LEVEL_SELECT.levels[i].xPosition + levelButton.width + 20;
+                    this.pointerSprite.x = this.LEVEL_SELECT.levels[i].xPosition + levelButton.width + this.POINTER_OFFSET_X;
                     this.pointerSprite.y = this.LEVEL_SELECT.levels[i].yPosition;
                     levelButton.alpha = 1;
 
@@ -502,6 +511,10 @@ MainMenu.prototype = {
         game.sound.stopAll();
         game.state.add("Play", Play);
         game.state.start("Play", true, false, level);
+    },
+    credits: function () {
+        game.state.add("Credits", Credits);
+        game.state.start("Credits");
     },
     resetSavedData: function () {
         var i;

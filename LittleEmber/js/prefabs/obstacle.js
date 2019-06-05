@@ -19,8 +19,11 @@ function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yV
     // Extra parameters
     this.burnable = obstacle.burnable;
     this.burning = obstacle.burning;
+    this.size = obstacle.size;
+    if (obstacle.water !== undefined) {
+        this.water = obstacle.water;
+    }
 
-    // console.log(obstacle.defaultSoundName);
     if (obstacle.defaultSoundName !== undefined) {
         this.defaultSoundName = game.add.audio(obstacle.defaultSoundName);
         this.defaultSoundName.play();
@@ -31,7 +34,6 @@ function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yV
     }
 
     // Check for right spawning coordinates
-
     if (this.x + this.body.width / 2 > game.world.width) {
         this.x = game.world.width - this.body.width / 2;
     }
@@ -42,11 +44,20 @@ function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yV
     // Score and meter change
     this.score = obstacle.score;
     this.burnMeterChange = obstacle.burnMeterChange;
+    if (obstacle.scorchMeterChange !== undefined) {
+        this.scorchMeterChange = obstacle.scorchMeterChange;
+    }
 
     // Set animations
     this.animations.add("idle", obstacle.idleAnimationFrames, 15, true, false);
     this.animations.add("burning", obstacle.burningAnimationFrames, 15, true, false);
-    this.animations.add("ashe", obstacle.burnedAnimationFrames, 15, true, false);
+    this.animations.add("ashe", obstacle.burnedAnimationFrames, 15, false, false);
+    if (obstacle.scorchAnimationFrames !== undefined) {
+        this.animations.add("scorched", obstacle.scorchAnimationFrames, 15, true, false);
+    }
+    if (obstacle.scorchAshenAnimationFrames !== undefined) {
+        this.animations.add("scorchedAshe", obstacle.scorchAshenAnimationFrames, 15, false, false);
+    }
 
     this.animations.play("idle", true);
 }
