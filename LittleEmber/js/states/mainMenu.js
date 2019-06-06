@@ -236,6 +236,10 @@ MainMenu.prototype = {
                 if(!this.tutorialIsUp) { // if tutorial isn't already displaying
                     this.tutorialIsUp = true;
                     this.tutorialImg = game.add.sprite(0, 0, "tutorialScreen");
+                    this.tutorialMMButton = game.add.sprite(game.world.width - 200, game.world.height - 40, "atlas", "mainMenuButton_01");
+                    this.tutorialMMButton.animations.add("burn", ["mainMenuButton_01", "mainMenuButton_02"], 15, true);
+                    this.tutorialMMButton.animations.play("burn", true);
+
                 }
                 else { // tutorialScreen is already up and we need to get rid of it
                     this.tutorialImg.destroy();
