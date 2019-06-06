@@ -244,6 +244,7 @@ MainMenu.prototype = {
                 else { // tutorialScreen is already up and we need to get rid of it
                     this.tutorialImg.destroy();
                     this.tutorialIsUp = false;
+                    this.tutorialMMButton.destroy();
                 }
             }
         }
