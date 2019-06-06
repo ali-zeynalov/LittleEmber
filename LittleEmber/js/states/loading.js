@@ -30,6 +30,7 @@ Loading.prototype = {
         game.load.image("mainMenuBackground", "assets/img/individualSprites/mainMenu.png");
         game.load.image("background_01", "assets/img/individualSprites/background_01.png");
         game.load.image("planks", "assets/img/individualSprites/planks_01.png");
+        game.load.image("tutorialScreen", "assets/img/individualSprites/tutorialScreen.png");
 
         game.load.atlas("atlas", "assets/img/spritesheet.png", "assets/img/sprites.json");
 

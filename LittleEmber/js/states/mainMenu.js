@@ -8,7 +8,7 @@
 var MainMenu = function (game) {
     this.BUTTON_MARGIN_X = 10;
     this.BUTTON_MARGIN_Y = 60;
-
+    this.tutorialIsUp = false;
     this.POINTER_OFFSET_X = 30;
 };
 
@@ -184,7 +184,7 @@ MainMenu.prototype = {
     },
     update: function () {
         // Select the menu option
-        if ((game.input.keyboard.justPressed(Phaser.Keyboard.ENTER) || game.input.keyboard.justPressed(Phaser.Keyboard.E)) && !this.switchingStates) {
+        if ((game.input.keyboard.justPressed(Phaser.Keyboard.ENTER) || game.input.keyboard.justPressed(Phaser.Keyboard.E)) && !this.switchingStates && !this.tutorialIsUp) {
             if (this.pointer === 0) {
                 this.switchingStates = true;
                 this.startNewGame();
@@ -203,7 +203,7 @@ MainMenu.prototype = {
         }
 
         // Show list of levels to start at
-        if (this.pointer === 1 && this.MENU_SELECT[this.pointer].hovered && !this.switchingStates) {
+        if (this.pointer === 1 && this.MENU_SELECT[this.pointer].hovered && !this.switchingStates && !this.tutorialIsUp) {
             if (this.levelButtons.length === 0) {
                 this.updateLevelSelect(true);
             }
@@ -230,12 +230,26 @@ MainMenu.prototype = {
             this.removeLevelSelect();
         }
 
+        // tutorial selected
+        if ((game.input.keyboard.justPressed(Phaser.Keyboard.ENTER) || game.input.keyboard.justPressed(Phaser.Keyboard.E)) && !this.switchingStates) {
+            if (this.pointer === 2) {
+                if(!this.tutorialIsUp) { // if tutorial isn't already displaying
+                    this.tutorialIsUp = true;
+                    this.tutorialImg = game.add.sprite(0, 0, "tutorialScreen");
+                }
+                else { // tutorialScreen is already up and we need to get rid of it
+                    this.tutorialImg.destroy();
+                    this.tutorialIsUp = false;
+                }
+            }
+        }
+
         // Checks where user is navigating in the main menu
         var direction = -1;
-        if ((game.input.keyboard.justPressed(Phaser.Keyboard.W) || game.input.keyboard.justPressed(Phaser.Keyboard.UP))) {
+        if ((game.input.keyboard.justPressed(Phaser.Keyboard.W) || game.input.keyboard.justPressed(Phaser.Keyboard.UP)) && !this.tutorialIsUp) {
             this.isMenuChanging = true;
             direction = 0;
-        } else if ((game.input.keyboard.justPressed(Phaser.Keyboard.S) || game.input.keyboard.justPressed(Phaser.Keyboard.DOWN))) {
+        } else if ((game.input.keyboard.justPressed(Phaser.Keyboard.S) || game.input.keyboard.justPressed(Phaser.Keyboard.DOWN)) && !this.tutorialIsUp) {
             this.isMenuChanging = true;
             direction = 1;
         }
