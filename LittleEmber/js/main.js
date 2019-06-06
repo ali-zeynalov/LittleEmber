@@ -414,7 +414,35 @@ var LEVELS = [
         level: 3,
         finished: false,
         background: "background_01",
-        obstacles: [],
+        obstacles: [
+            {
+                name: "business",
+                size: 2,
+                burnable: true,
+                burning: false,
+                hitBoxScaleX: 180,
+                hitBoxScaleY: 105,
+                hitBoxOffsetX: 20,
+                hitBoxOffsetY: 10,
+                /*** TODO: Use this structure when we have animations for our objects
+                 idleAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burningAnimationFrames: ["animation0", "animation1", "animation2"],
+                 burnedAnimationFrames: ["animation0", "animation1", "animation2"],
+                 */
+                idleAnimationFrames: ["stump"],
+                scorchAnimationFrames: ["stumpScorch_01", "stumpScorch_02"],
+                scorchAshenAnimationFrames: ["stumpScorchAshen_01", "stumpScorchAshen_02"],
+                burningAnimationFrames: ["stumpBurning_01", "stumpBurning_02"],
+                burnedAnimationFrames: ["ashes"],
+                /*** TODO: Use this structure when we have sound for our objects
+                 defaultSoundName: "defaultSound",*/
+                 burningSoundName: "burningSound",
+
+                burnMeterChange: 0.1,
+                scorchMeterChange: -0.08,
+                score: 100
+            },
+        ],
         eventLevel: {},
         scoreGoal: 2500,
         score: {
