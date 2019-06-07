@@ -103,7 +103,7 @@ Play.prototype = {
         this.instructions.add(this.levelInstructions);
 
         // make player character
-        this.playerBurnMeter = 0.5;
+        this.playerBurnMeter = 2; // was 0.5
         this.playerSize = 0;
 
         this.player = game.add.sprite(game.world.width / 2, game.world.height - 50, "atlas", LEVELS[this.level].player.flameSprite);
@@ -297,6 +297,7 @@ Play.prototype = {
                 this.combo = 0;
                 if (obstacle.water) {
                     this.flameSizzle.play('', 0, 0.3, false);
+                    game.time.events.add(0, this.playerBlink, this);
                 }
                 this.numberOfBadsHit++;
             }
@@ -427,6 +428,7 @@ Play.prototype = {
                 this.playerBurnMeter += this.combo / 100;
             }
             this.flameSizzle.play('', 0, 0.3, false);
+            game.time.events.add(0, this.playerBlink, this);
 
             this.updateSavedCombo();
 
@@ -479,6 +481,21 @@ Play.prototype = {
         this.obstacles.killAll();
         this.levelEvents.killAll();
 
+    },
+    playerBlink: function () {
+        var alphaDown = game.add.tween(this.player).to( { alpha: 0.1 }, 150, Phaser.Easing.Linear.None, true);
+        var alphaUp = game.add.tween(this.player).to( { alpha: 1 }, 150, Phaser.Easing.Linear.None, true);
+        var alphaReg = game.add.tween(this.player).to( { alpha: 1 }, 150, Phaser.Easing.Linear.None, true);
+        alphaDown.start();
+        alphaDown.chain(alphaUp);
+        alphaUp.chain(alphaDown);
+        alphaDown.chain(alphaReg);
+        // tween.onComplete.add(function() {
+        //     game.time.events.add(0, function() {
+        //         // anything here will happen right after the tween has ended
+        //         game.add.tween(this.player).to( { alpha: 1 }, 300, Phaser.Easing.Linear.None, true);
+        //         }, this);
+        // }, this);tween.start();﻿
     },
     calculateGrade: function () {
         var time;
