@@ -96,8 +96,7 @@ MainMenu.prototype = {
         // Background music
         if (this.startMusic) {
             this.menuMusic = game.add.audio("menuMusic");
-            this.menuMusic.play('', 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
-
+            this.menuMusic.play("", 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
         }
 
         if (window.localStorage) {
@@ -105,12 +104,11 @@ MainMenu.prototype = {
                 var levels = JSON.parse(localStorage.getItem("LEVELS"));
                 if (levels[0].version === LEVELS[0].version) {
                     LEVELS = levels;
-                    // console.log("Version is up to date :)");
+                    console.log("Version is up to date :)");
                 } else {
                     console.log("Old version, Updating...");
                     localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
                 }
-
             } else {
                 console.log("No save data, Creating it...");
                 localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
@@ -118,16 +116,8 @@ MainMenu.prototype = {
         }
         this.menuBackground = game.add.sprite(0, 0, "mainMenuBackground");
 
-        // Name of our game
-        var textStyle = {
-            font: "Comic Sans MS",
-            fontSize: "60px",
-            fill: "#faba45"
-        };
-
-        var titleText = game.add.text(game.world.width / 2, game.world.height / 8, "Little Ember", textStyle);
-        titleText.anchor.set(0.5);
-        titleText.setShadow(3, 3, 'rgba(0,0,0,0.7)', 0);
+        var title = game.add.sprite(game.world.width / 2, game.world.height / 8, "atlas", "menuTitle");
+        title.anchor.set(0.5);
 
         // Pointer to keep track on what menu button we are on
         this.pointer = 0;
@@ -147,7 +137,7 @@ MainMenu.prototype = {
         this.switchingStates = false;
 
         // Show player their previous stats
-        textStyle = {
+        var textStyle = {
             font: "Comic Sans MS",
             fontSize: "48px",
             fill: "#fa8b1d"
@@ -161,7 +151,7 @@ MainMenu.prototype = {
             font: "Comic Sans MS",
             fontSize: "28px",
             fill: "#fa8b1d",
-            align: "left",
+            align: "left"
         };
 
         this.bestAllTimeStats = game.add.text(20, game.world.height - game.world.height / 7, "", textStyle);
@@ -172,7 +162,7 @@ MainMenu.prototype = {
             font: "Comic Sans MS",
             fontSize: "28px",
             fill: "#fa8b1d",
-            align: "center",
+            align: "center"
         };
 
         this.bestRun = game.add.text(game.world.width - 20, game.world.height - game.world.height / 7, "", textStyle);
@@ -188,9 +178,14 @@ MainMenu.prototype = {
             if (this.pointer === 0) {
                 this.switchingStates = true;
                 this.startNewGame();
+            } else if (this.pointer === 2) {
+                this.switchingStates = true;
+                game.state.add("Tutorial", Tutorial);
+                game.state.start("Tutorial");
             } else if (this.pointer === 3) {
                 this.switchingStates = true;
-                this.credits();
+                game.state.add("Credits", Credits);
+                game.state.start("Credits");
             }
         }
 
@@ -512,10 +507,6 @@ MainMenu.prototype = {
         game.state.add("Play", Play);
         game.state.start("Play", true, false, level);
     },
-    credits: function () {
-        game.state.add("Credits", Credits);
-        game.state.start("Credits");
-    },
     resetSavedData: function () {
         var i;
         for (i in LEVELS) {
@@ -526,6 +517,11 @@ MainMenu.prototype = {
             }
 
         }
+
+        if (window.localStorage) {
+            localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
+        }
+
     },
     showBestStats: function () {
         // Show on the screen the stats for specific level

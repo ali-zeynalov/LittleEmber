@@ -5,7 +5,7 @@
  *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
  */
 
-function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yVelocity, maxVelocity) {
+function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yVelocity, maxVelocity, level) {
     Phaser.Sprite.call(this, game, xPosition, yPosition, "atlas", obstacle.name);
     this.anchor.set(0.5);
     game.physics.arcade.enable(this);
@@ -13,7 +13,12 @@ function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yV
     this.body.maxVelocity.y = maxVelocity;
     this.body.velocity.x = xVelocity;
     this.body.velocity.y = yVelocity;
-    this.body.setSize(obstacle.hitBoxScaleX, obstacle.hitBoxScaleY, obstacle.hitBoxOffsetX, obstacle.hitBoxOffsetY);
+
+    if (level === 3) {
+        this.body.setCircle(obstacle.hitBoxScaleX, obstacle.hitBoxOffsetX, obstacle.hitBoxOffsetY);
+    } else {
+        this.body.setSize(obstacle.hitBoxScaleX, obstacle.hitBoxScaleY, obstacle.hitBoxOffsetX, obstacle.hitBoxOffsetY);
+    }
     this.scale.x = direction;
 
     // Extra parameters
@@ -72,7 +77,10 @@ Obstacle.prototype.update = function () {
     // Destroy object if outside of the game bounds
     if (this.body.position.y > game.world.height + this.body.height) {
         if (this.burningSoundName !== undefined) {
-            this.defaultSoundName.stop();
+            this.burningSoundName.stop();
+        }
+        if(this.defaultSoundName !== undefined){
+            this.defaultSoundName .stop();
         }
         this.destroy();
     }
