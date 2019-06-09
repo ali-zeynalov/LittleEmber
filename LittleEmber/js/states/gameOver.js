@@ -4,11 +4,8 @@
  *
  *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
  */
-
 var GameOver = function (game) {
-
     this.BUTTON_MARGIN_Y = game.world.height - game.world.height / 5
-
 };
 GameOver.prototype = {
     init: function (level, levelComplete, newHighScore) {
@@ -48,8 +45,6 @@ GameOver.prototype = {
         // Board picture
         this.woodenBoard = game.add.sprite(game.world.centerX, game.world.centerY, "gameOver");
         this.woodenBoard.anchor.set(0.5);
-        // this.woodenBoard.scale.setTo(4);
-        // this.woodenBoard.angle = 90;
 
         // Title format and text
         var textStyle = {
@@ -129,7 +124,6 @@ GameOver.prototype = {
         if (direction !== -1) {
             this.movePointer(direction);
         }
-
         // Update the menu
         if (this.isMenuChanging) {
             this.updateMenu(false);
@@ -140,9 +134,7 @@ GameOver.prototype = {
             if (this.pointer === 0) {
                 this.titleScreen();
             } else {
-                game.sound.stopAll();
                 if (this.pointer === 1) {
-                    // this.startLevel(this.level + 1);
                     this.transition(this.level);
                 } else {
                     this.startLevel(this.level);
@@ -156,7 +148,6 @@ GameOver.prototype = {
          *   1 - RIGHT
          */
         this.MENU_SELECT[this.pointer].hovered = false;
-
         if (this.pointer === 0) {
             if (direction === 0) {
                 if (this.levelComplete) {
@@ -171,14 +162,10 @@ GameOver.prototype = {
                     this.pointer = 2;
                 }
             }
-
         } else {
             this.pointer = 0;
-
         }
-
         this.MENU_SELECT[this.pointer].hovered = true;
-
     },
     titleScreen: function () {
         // switch to MainMenu state
@@ -234,16 +221,16 @@ GameOver.prototype = {
         this.isMenuChanging = false;
     },
     startLevel: function (level) {
+        // Restart level
         game.sound.stopAll();
         game.state.start("Play", true, false, level);
     },
     transition: function (level) {
+        // Switch to cutscene if won
         game.sound.stopAll();
         var xDirection = 0;
         var yDirection = 0;
 
-        //TODO: NOT SURE WHAT WILL BE AT THE END
-        //TODO: NEED TO ADD REAL VALUES FOR TRANSITION ANIMATION
         if (level === 1) {
             xDirection = -50;
         } else if (level === 2) {
@@ -304,5 +291,4 @@ GameOver.prototype = {
             this.grade.text += "D-";
         }
     }
-
 };

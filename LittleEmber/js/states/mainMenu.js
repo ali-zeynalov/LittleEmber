@@ -4,7 +4,6 @@
  *
  *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
  */
-
 var MainMenu = function (game) {
     this.BUTTON_MARGIN_X = 10;
     this.BUTTON_MARGIN_Y = 60;
@@ -98,13 +97,12 @@ MainMenu.prototype = {
             this.menuMusic = game.add.audio("menuMusic");
             this.menuMusic.play("", 0, 0.8, true); // ('marker', start position, volume (0-1), loop)
         }
-
+        // Check for local storage
         if (window.localStorage) {
             if (localStorage.getItem("LEVELS") !== null) {
                 var levels = JSON.parse(localStorage.getItem("LEVELS"));
                 if (levels[0].version === LEVELS[0].version) {
                     LEVELS = levels;
-                    console.log("Version is up to date :)");
                 } else {
                     console.log("Old version, Updating...");
                     localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
@@ -124,19 +122,19 @@ MainMenu.prototype = {
         this.menuButtons = game.add.group();
         this.updateMenu(true);
         this.isMenuChanging = false;
-        // Point sprite to make it look nice
+        // Point sprite to show visually where we at
         this.pointerSprite = game.add.sprite(this.menuButtons.getAt(0).width + this.POINTER_OFFSET_X, this.MENU_SELECT[0].yPosition, "atlas", "littleEmber");
         this.pointerSprite.animations.add("burning", LEVELS[1].player.flameAnimation, 30, true);
         this.pointerSprite.animations.play("burning");
         this.pointerSprite.anchor.set(0.5);
         this.pointerSprite.scale.setTo(0.2);
-
+        // Pointer for selecting levels on Continue screen
         this.levelSelectPointer = 0;
         this.levelButtons = game.add.group();
 
         this.switchingStates = false;
 
-        // Show player their previous stats
+        // Show player their previous stats for each level
         var textStyle = {
             font: "Comic Sans MS",
             fontSize: "48px",
@@ -185,7 +183,7 @@ MainMenu.prototype = {
             } else if (this.pointer === 3) {
                 this.switchingStates = true;
                 game.state.add("Credits", Credits);
-                game.state.start("Credits");
+                game.state.start("Credits", true, false, false);
             }
         }
 
@@ -262,10 +260,9 @@ MainMenu.prototype = {
          *   0 - UP
          *   1 - DOWN
          */
+        // If we are not on level select screen part then move pointer
         if (!this.LEVEL_SELECT.levelSelect) {
             this.MENU_SELECT[this.pointer].hovered = false;
-
-
             if (this.pointer === 0) {
                 if (direction === 0) {
                     this.pointer = this.MENU_SELECT.length - 1;
@@ -294,6 +291,7 @@ MainMenu.prototype = {
             this.MENU_SELECT[this.pointer].hovered = true;
 
         } else {
+            // Move pointer on level select part
             this.LEVEL_SELECT.levels[this.levelSelectPointer].hovered = false;
 
             if (this.levelSelectPointer === 0) {
@@ -323,13 +321,13 @@ MainMenu.prototype = {
             }
             this.LEVEL_SELECT.levels[this.levelSelectPointer].hovered = true;
         }
-
     },
     checkPointer: function (direction) {
         /*** Direction Meaning:
          *   0 - UP
          *   1 - DOWN
          */
+        // Logic to check pointer when we are not on level select part
         if (!this.LEVEL_SELECT.levelSelect) {
             while (this.MENU_SELECT[this.pointer].greyedOut !== undefined && this.MENU_SELECT[this.pointer].greyedOut) {
                 if (direction === 0) {
@@ -345,6 +343,7 @@ MainMenu.prototype = {
                 }
             }
         } else {
+            // Check pointer on level select part
             while (this.LEVEL_SELECT.levels[this.levelSelectPointer].greyedOut !== undefined && this.LEVEL_SELECT.levels[this.levelSelectPointer].greyedOut) {
                 if (direction === 0) {
                     this.levelSelectPointer -= 1;
@@ -366,6 +365,7 @@ MainMenu.prototype = {
         var i;
         var menuButton;
         for (i in this.MENU_SELECT) {
+            // If button is greyed out
             if (this.MENU_SELECT[i].greyedOut !== undefined) {
                 this.MENU_SELECT[i].greyedOut = !LEVELS[1].finished;
                 if (this.MENU_SELECT[i].greyedOut) {
@@ -384,7 +384,7 @@ MainMenu.prototype = {
                     continue;
                 }
             }
-
+            // If button is being hovered
             if (this.MENU_SELECT[i].hovered) {
                 if (isFirstTime) {
                     menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonHoverName);
@@ -404,6 +404,7 @@ MainMenu.prototype = {
                     menuButton.animations.play("selected");
                 }
             } else {
+                // If button is not being selected
                 if (isFirstTime) {
                     menuButton = game.add.sprite(this.MENU_SELECT[i].xPosition, this.MENU_SELECT[i].yPosition, "atlas", this.MENU_SELECT[i].buttonName);
                     menuButton.anchor.set(0, 0.5);
@@ -428,6 +429,7 @@ MainMenu.prototype = {
         var levelButton;
         for (var i = 0; i < this.LEVEL_SELECT.levels.length; i++) {
             if (this.LEVEL_SELECT.levels[i].greyedOut !== undefined) {
+                // Check to see if levels need to be greyed out
                 if (i + 1 < this.LEVEL_SELECT.levels.length) {
                     if (LEVELS[i + 1].finished) {
                         this.LEVEL_SELECT.levels[i].greyedOut = false;
@@ -436,6 +438,7 @@ MainMenu.prototype = {
                         }
                     }
                 }
+                // If the button is greyed out
                 if (this.LEVEL_SELECT.levels[i].greyedOut) {
                     if (firstInitialization) {
                         levelButton = game.add.sprite(this.LEVEL_SELECT.levels[i].xPosition, this.LEVEL_SELECT.levels[i].yPosition, "atlas", this.LEVEL_SELECT.levels[i].buttonGreyedOut);
@@ -452,7 +455,7 @@ MainMenu.prototype = {
                     continue;
                 }
             }
-
+            // If button is being hovered
             if (this.LEVEL_SELECT.levels[i].hovered) {
                 if (firstInitialization) {
                     levelButton = game.add.sprite(this.LEVEL_SELECT.levels[i].xPosition, this.LEVEL_SELECT.levels[i].yPosition, "atlas", this.LEVEL_SELECT.levels[i].buttonHoverName);
@@ -472,6 +475,7 @@ MainMenu.prototype = {
                     levelButton.animations.play("selected");
                 }
             } else {
+                // If button is not being selected
                 if (firstInitialization) {
                     levelButton = game.add.sprite(this.LEVEL_SELECT.levels[i].xPosition, this.LEVEL_SELECT.levels[i].yPosition, "atlas", this.LEVEL_SELECT.levels[i].buttonName);
                     levelButton.anchor.set(0, 0.5);
@@ -488,7 +492,6 @@ MainMenu.prototype = {
                     levelButton.alpha = 1;
                 }
             }
-
         }
         this.isMenuChanging = false;
     },
@@ -517,7 +520,7 @@ MainMenu.prototype = {
             }
 
         }
-
+        // Reset save data if available
         if (window.localStorage) {
             localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
         }

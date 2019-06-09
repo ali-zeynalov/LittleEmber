@@ -4,7 +4,6 @@
  *
  *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
  */
-
 function LevelEvent(game, xPosition, yPosition, eventLevel) {
     Phaser.Sprite.call(this, game, xPosition, yPosition, "atlas", eventLevel.name);
     game.physics.arcade.enable(this);
@@ -16,8 +15,8 @@ function LevelEvent(game, xPosition, yPosition, eventLevel) {
     this.gotHit = false;
 
     this.eventType = eventLevel.type;
+    // Special parameters depending on what even it is
     if (eventLevel.type === "rain") {
-
         this.animations.add("trigger", eventLevel.mainAnimation, 15, false);
 
         this.body.setCircle(63);
@@ -57,7 +56,6 @@ function LevelEvent(game, xPosition, yPosition, eventLevel) {
 
         game.time.events.add(Phaser.Timer.SECOND, this.levelEventAnimation, this, this);
     }
-
 }
 
 LevelEvent.prototype = Object.create(Phaser.Sprite.prototype);
@@ -84,7 +82,6 @@ LevelEvent.prototype.levelEventAnimation = function (eventLevel) {
         eventLevel.animations.play("trigger");
         this.eventAnimationStopped();
     }
-
 };
 
 LevelEvent.prototype.eventAnimationStopped = function () {
@@ -101,7 +98,7 @@ LevelEvent.prototype.update = function () {
         && this.waterDropBody.animations.currentAnim.name === "idle") {
         this.waterDropBody.animations.play("splash");
     }
-
+    // Change hitbox of animation depending on current animation frame playing
     if (this.eventType === "helicopter") {
         this.body.setSize(130, this.animations.currentFrame.height, 10, 0);
     }

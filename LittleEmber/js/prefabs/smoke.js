@@ -4,7 +4,6 @@
  *
  *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
  */
-
 function Smoke(game, xPosition, yPosition, playerScale) {
     Phaser.Sprite.call(this, game, xPosition, yPosition, "atlas", "smoke_01");
     this.anchor.set(0.5);
