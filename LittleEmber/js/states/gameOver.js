@@ -31,7 +31,7 @@ GameOver.prototype = {
                 buttonName: "continueButtonDown",
                 buttonHoverName: "continueButton",
                 buttonHoverAnimation: ["continueButton_01", "continueButton_02"],
-                xPosition: game.world.width - game.world.width / 3,
+                xPosition: game.world.width - game.world.width / 3 - 20,
                 yPosition: this.BUTTON_MARGIN_Y,
                 hovered: true
             },
@@ -46,10 +46,10 @@ GameOver.prototype = {
         ];
 
         // Board picture
-        this.woodenBoard = game.add.sprite(game.world.centerX, game.world.centerY, "planks");
+        this.woodenBoard = game.add.sprite(game.world.centerX, game.world.centerY, "gameOver");
         this.woodenBoard.anchor.set(0.5);
-        this.woodenBoard.scale.setTo(4);
-        this.woodenBoard.angle = 90;
+        // this.woodenBoard.scale.setTo(4);
+        // this.woodenBoard.angle = 90;
 
         // Title format and text
         var textStyle = {
@@ -142,7 +142,8 @@ GameOver.prototype = {
             } else {
                 game.sound.stopAll();
                 if (this.pointer === 1) {
-                    this.startLevel(this.level + 1);
+                    // this.startLevel(this.level + 1);
+                    this.transition(this.level);
                 } else {
                     this.startLevel(this.level);
                 }
@@ -235,6 +236,22 @@ GameOver.prototype = {
     startLevel: function (level) {
         game.sound.stopAll();
         game.state.start("Play", true, false, level);
+    },
+    transition: function (level) {
+        game.sound.stopAll();
+        var xDirection = 0;
+        var yDirection = 0;
+
+        //TODO: NOT SURE WHAT WILL BE AT THE END
+        //TODO: NEED TO ADD REAL VALUES FOR TRANSITION ANIMATION
+        if (level === 1) {
+            xDirection = -50;
+        } else if (level === 2) {
+            yDirection = -50;
+        }
+
+        game.state.add("Cutscene", Cutscene);
+        game.state.start("Cutscene", true, false, level, xDirection, yDirection);
     },
     showGameStats: function () {
         // Show on the screen the stats for specific level
