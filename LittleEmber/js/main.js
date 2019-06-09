@@ -4,13 +4,12 @@
  *
  *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
  */
-
 var game = new Phaser.Game(600, 800, Phaser.AUTO, "myGame", {preload: preload, create: create});
 // Data that each level requires to run
 var LEVELS = [
     {
         level: 0,
-        version: "0.17.4.21"
+        version: "1.0.0.01"
         /***
          * TODO: Tutorial level data goes here
          */
@@ -865,12 +864,12 @@ var LEVELS = [
 ];
 
 function preload() {
-    // Load loading assets
+    // Load assets for loading screen
     game.load.atlas("preloadAtlas", "assets/img/spritesheetPreload.png", "assets/img/spritesPreload.json");
 }
 
 function create() {
-    // switch to loading state
+    // Switch to loading state
     game.state.add("Loading", Loading);
     game.state.start("Loading");
 }

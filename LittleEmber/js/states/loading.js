@@ -56,7 +56,6 @@ Loading.prototype = {
         game.load.audio("nonIgnition", ["assets/audio/nonIgnition.mp3"]);
         game.load.audio("busIgnition", ["assets/audio/busIgnition.mp3"]);
 
-
         game.load.audio("waterDrop", ["assets/audio/waterDrop.mp3"]);
         game.load.audio("menuSelect", ["assets/audio/menuSelect.mp3"]);
 
@@ -64,8 +63,6 @@ Loading.prototype = {
         game.load.audio("cricketFire", ["assets/audio/cricketFire.mp3"]);
         game.load.audio("electricStationIgnition", ["assets/audio/electricStationIgnition.mp3"]);
         game.load.audio("waterPlantIgnition", ["assets/audio/waterPlantIgnition.mp3"]);
-
-
     },
     create: function () {
         // switch to main menu state

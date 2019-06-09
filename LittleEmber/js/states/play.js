@@ -4,7 +4,6 @@
  *
  *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
  */
-
 var Play = function (game) {
     this.SCROLLING_SPEED_GRASS = 5;
 
@@ -24,7 +23,6 @@ var Play = function (game) {
 Play.prototype = {
     init: function (level) {
         // Initialize incoming variables
-        // this.LEVELS = LEVELS;
         this.level = level;
     },
     create: function () {
@@ -63,7 +61,7 @@ Play.prototype = {
         this.gales.animations.play("gales");
         game.physics.enable(this.gales, Phaser.Physics.ARCADE);
 
-        // Default score
+        // Score and combo text. If space level then change text format
         var textStyle;
         if (this.level === 3) {
             textStyle = {
@@ -133,7 +131,7 @@ Play.prototype = {
         this.instructions.add(this.controlsInstruction);
         this.instructions.add(this.levelInstructions);
 
-        // make player character
+        // Initialize player
         this.playerBurnMeter = 0.5;
         this.playerSize = 0;
 
@@ -161,7 +159,6 @@ Play.prototype = {
 
         this.burnBarBackground = game.add.sprite(game.world.width, 0, "atlas", LEVELS[this.level].burnMeter.burnMeterBackground);
         this.burnBarBackground.anchor.x = 1;
-        // this.burnBarBackground.scale.x = 1;
 
         this.burnBarCutout = game.add.sprite(game.world.width, 0, "atlas", LEVELS[this.level].burnMeter.burnMeterCutout);
         this.burnBarCutout.anchor.x = 1;
@@ -176,7 +173,7 @@ Play.prototype = {
         if (!this.startGame) {
             this.isPlayerReady();
         }
-
+        // Update player size based on player scale
         if (this.player.scale.x >= 1.3) {
             this.playerSize = 2;
         } else if (this.player.scale.x >= 0.8) {
@@ -194,9 +191,8 @@ Play.prototype = {
         this.gales.tilePosition.x -= 10;
         this.grassBg.tilePosition.y += this.SCROLLING_SPEED_GRASS;
 
-        // allow the player to exit game to GameOver state by pressing Q
-        if ((game.input.keyboard.justPressed(Phaser.Keyboard.Q) || this.player.scale.x <= 0.2 || this.burnBarBackground.scale.x <= this.BURN_BAR_MIN)
-            && !this.isGameOver) {
+        // If player size is smaller than 0.2 or burn bar is filled then game over
+        if ((this.player.scale.x <= 0.2 || this.burnBarBackground.scale.x <= this.BURN_BAR_MIN) && !this.isGameOver) {
             this.isGameOver = true;
             var levelComplete = false;
 
@@ -204,13 +200,14 @@ Play.prototype = {
             this.updateSavedScore();
             this.updateSavedTime();
 
-            if (this.burnBarBackground.scale.x <= this.BURN_BAR_MIN || game.input.keyboard.isDown(Phaser.Keyboard.Q)) {
+            if (this.burnBarBackground.scale.x <= this.BURN_BAR_MIN) {
+                // Win logic here
                 this.updateSavedBestStats();
                 this.calculateGrade();
                 LEVELS[this.level].finished = true;
                 levelComplete = true;
             }
-
+            // Save level result in local storage
             if (window.localStorage) {
                 localStorage.setItem("LEVELS", JSON.stringify(LEVELS));
             }
@@ -221,10 +218,7 @@ Play.prototype = {
             this.gameOverSequence(levelComplete);
         }
 
-        // add player input checks
-        // since they're not in else ifs, we should be able to get combinatorial movement
-        // these combo movements are not as fast as they should technically be, so might add
-        // euclidian combinatorial directionns instead
+        // If game is not over check player input, and collisions with objects
         if (!this.isGameOver) {
             if ((game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.UP)) &&
                 (!game.input.keyboard.isDown(Phaser.Keyboard.S) && !game.input.keyboard.isDown(Phaser.Keyboard.DOWN))) {
@@ -271,7 +265,6 @@ Play.prototype = {
             game.physics.arcade.overlap(this.player, this.instructions, this.burnInstructions, null, this);
             game.physics.arcade.overlap(this.player, this.gales, this.boostPlayerUp, null, this);
             game.physics.arcade.overlap(this.player, this.levelEvents, this.hitByAnEvent, null, this);
-
         }
     },
     createObstacle: function () {
@@ -297,6 +290,7 @@ Play.prototype = {
         }
     },
     obstacleOverlap: function (player, obstacle) {
+        // If player overlapped an object
         if (!obstacle.burning) {
             var justScorched = false;
             obstacle.burning = true;
@@ -328,8 +322,8 @@ Play.prototype = {
                         obstacle.burningSoundName.play("", 0, 0.3, true);
                     }
                 }
-
             } else {
+                // If player overlapped a bad object
                 this.playerBurnMeter += this.combo / 100;
 
                 this.updateSavedCombo();
@@ -341,11 +335,10 @@ Play.prototype = {
                         this.flameSizzle.play("", 0, 0.3, false);
                     }
                     this.spawnSmoke();
-
-
                 } else {
                     this.nonIgnitionSound.play("", 0, 0.3, false)
                 }
+
                 this.playerAlphaDown(0);
                 this.numberOfBadsHit++;
             }
@@ -360,12 +353,14 @@ Play.prototype = {
         }
     },
     switchToAshe: function (obstacle) {
+        // Switch to ashe animation a burning object
         if (obstacle.burningSoundName !== undefined) {
             obstacle.burningSoundName.stop();
         }
         obstacle.animations.play("ashe", false);
     },
     switchToScorchedAshe: function (obstacle) {
+        // Switch from scorch animation to scorch + ashe animation
         obstacle.animations.play("scorchedAshe", false);
     },
     updateScore: function (scoreValue) {
@@ -374,6 +369,7 @@ Play.prototype = {
         this.scoreText.text = "Score: " + this.score;
     },
     playerBurnMeterConstantChange: function () {
+        // Constantly reduce player size to give an intention to move
         if (!this.isGameOver) {
             // Constant change of the burn meter
             if (this.playerBurnMeter > 0.1) {
@@ -402,19 +398,13 @@ Play.prototype = {
         // see if player volume needs to change (based on player size)
         if (currentSize <= 0.6) { // player is smol (0.6 is arbitrary, but no use making a const for this imo
             this.flameSound.volume = 0.4;
-            // console.log("player smol volume engaged");
         } else if (currentSize > 0.6 && currentSize <= 1.5) { // player is avg size
             this.flameSound.volume = 0.6;
-            // console.log("player avg volume engaged");
         } else { // player is a h*ckin' ch0nker
             this.flameSound.volume = 1;
-            // console.log("player ch0nker volume engaged");
         }
 
         this.player.scale.setTo(currentSize);
-        // Can't use tween or it will mess up size update on winning condition.
-        // this.playerScaling = game.add.tween(this.player.scale);
-        // this.playerScaling.to({x: currentSize, y: currentSize}, 500, Phaser.Easing.Circular.Out, true, 0, 0, false);
     },
     updateComboText: function () {
         if (this.combo > 1) {
@@ -424,6 +414,7 @@ Play.prototype = {
         }
     },
     isPlayerReady: function () {
+        // If instructions have been burned
         if (this.instructions.length === 0) {
             // updated value to start the game
             this.startGame = true;
@@ -439,8 +430,6 @@ Play.prototype = {
             var time;
             if (LEVELS[this.level].eventLevel.type === "rain") {
                 time = Phaser.Timer.SECOND;
-            } else if (LEVELS[this.level].eventLevel.type === "helicopter") {
-                time = Phaser.Timer.SECOND * 5;
             } else {
                 time = Phaser.Timer.SECOND * 5;
             }
@@ -459,6 +448,7 @@ Play.prototype = {
         instructionBoard.destroy();
     },
     levelEvent: function () {
+        // Spawn level event
         if (!this.isGameOver) {
             if (LEVELS[this.level].eventLevel.type === "rain") {
                 // spawn event at a random spot and add properties to it
@@ -492,12 +482,13 @@ Play.prototype = {
 
     },
     hitByAnEvent: function (player, event) {
+        // If player got hit by an event
         if (event.levelEventAnimationStopped && !event.gotHit) {
             event.gotHit = true;
             if (this.level === 1) {
                 this.updateScore(-100);
             } else if (this.level === 2) {
-                this.updateScore(-1000);
+                this.updateScore(-2000);
             } else {
                 this.updateScore(-25000);
             }
@@ -519,6 +510,7 @@ Play.prototype = {
         }
     },
     boostPlayerUp: function (player, gales) {
+        // Boost player up if touched gales
         this.playerBoosted = true;
         player.body.velocity.y = -this.PLAYER_MAX_VELOCITY_Y;
     },
@@ -537,11 +529,9 @@ Play.prototype = {
         if (LEVELS[this.level].score.currentHighestCombo > LEVELS[this.level].score.bestHighestCombo) {
             LEVELS[this.level].score.bestHighestCombo = LEVELS[this.level].score.currentHighestCombo;
         }
-
         if (LEVELS[this.level].score.currentScore > LEVELS[this.level].score.bestScore) {
             LEVELS[this.level].score.bestScore = LEVELS[this.level].score.currentScore;
         }
-
         if (LEVELS[this.level].score.bestTimeClear === 0 || LEVELS[this.level].score.currentTimeClear < LEVELS[this.level].score.bestTimeClear) {
             LEVELS[this.level].score.bestTimeClear = LEVELS[this.level].score.currentTimeClear;
         }
@@ -558,10 +548,12 @@ Play.prototype = {
         this.obstacles.killAll();
     },
     playerAlphaDown: function (numberOfTimesBlinked) {
+        // Simulation of player blinking when taking damage
         this.player.alpha = 0.1;
         game.time.events.add(Phaser.Timer.QUARTER / 3, this.playerAlphaUp, this, numberOfTimesBlinked);
     },
     playerAlphaUp: function (numberOfTimesBlinked) {
+        // Simulation of player blinking when taking damage
         this.player.alpha = 1;
         if (numberOfTimesBlinked < 1) {
             numberOfTimesBlinked++;
@@ -590,12 +582,14 @@ Play.prototype = {
 
     },
     consumeScreen: function (isLevelComplete) {
+        // Animation for winning the game
         this.player.scale.setTo(1);
         this.player.animations.play("consume");
         this.player.animations.currentAnim.onComplete.add(this.pulseFire, this, isLevelComplete);
 
     },
     pulseFire: function (isLevelComplete) {
+        // Pulsing fire after winning the game
         this.player.animations.play("pulsingFire");
         game.time.events.add(Phaser.Timer.SECOND, this.gameOver, this, isLevelComplete)
     },
@@ -666,9 +660,4 @@ Play.prototype = {
     incrementBurnBar: function () {
         this.burnBarBackground.scale.x += this.BURN_BAR_INCREMENT_CHANGE;
     }
-    // ,
-    // render: function () {
-    //     game.debug.body(this.player);
-    //     // game.debug.spriteInfo(this.player, 32, 32)
-    // }
 };

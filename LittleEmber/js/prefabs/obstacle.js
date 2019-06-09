@@ -4,7 +4,6 @@
  *
  *GitHub Repository: https://github.com/ali-zeynalov/LittleEmber
  */
-
 function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yVelocity, maxVelocity, level) {
     Phaser.Sprite.call(this, game, xPosition, yPosition, "atlas", obstacle.name);
     this.anchor.set(0.5);
@@ -28,7 +27,7 @@ function Obstacle(game, xPosition, yPosition, direction, obstacle, xVelocity, yV
     if (obstacle.water !== undefined) {
         this.water = obstacle.water;
     }
-
+    // Assign sounds if objects have it
     if (obstacle.defaultSoundName !== undefined) {
         this.defaultSoundName = game.add.audio(obstacle.defaultSoundName);
         this.defaultSoundName.play();
@@ -79,8 +78,8 @@ Obstacle.prototype.update = function () {
         if (this.burningSoundName !== undefined) {
             this.burningSoundName.stop();
         }
-        if(this.defaultSoundName !== undefined){
-            this.defaultSoundName .stop();
+        if (this.defaultSoundName !== undefined) {
+            this.defaultSoundName.stop();
         }
         this.destroy();
     }
