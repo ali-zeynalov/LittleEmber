@@ -42,7 +42,7 @@ Loading.prototype = {
 
         game.load.atlas("atlas", "assets/img/spritesheet.png", "assets/img/sprites.json");
 
-        game.load.audio("menuMusic", ["assets/audio/menuMusic.mp3"]);
+        game.load.audio("menuMusic", ["assets/audio/MenuMusic.mp3"]);
         game.load.audio("lvl1", ["assets/audio/lvl1.mp3"]);
         game.load.audio("lvl2Opening", ["assets/audio/lvl2Opening.mp3"]);
         game.load.audio("lvl2", ["assets/audio/lvl2.mp3"]);
